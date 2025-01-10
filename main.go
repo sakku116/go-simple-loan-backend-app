@@ -36,6 +36,8 @@ func main() {
 	err := gormDB.AutoMigrate(
 		&model.User{},
 		&model.RefreshToken{},
+		&model.Loan{},
+		&model.Transaction{},
 	)
 	if err != nil {
 		logger.Fatalf("failed to migrate database: %v", err)
