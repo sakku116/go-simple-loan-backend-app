@@ -220,6 +220,8 @@ func (s *AuthUcase) Login(payload dto.LoginReq) (*dto.LoginRespData, error) {
 func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshTokenRespData, error) {
 	// get refresh token
 	refreshToken, err := s.refreshTokenRepo.GetByToken(payload.RefreshToken)
+	logger.Debugf("refresh token: %+v", helper.PrettyJson(refreshToken))
+	logger.Debugf("error: %v", err)
 	if err != nil {
 		logger.Errorf("refresh token not found: %v", err)
 		return nil, &error_utils.CustomErr{

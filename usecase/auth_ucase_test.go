@@ -1,7 +1,9 @@
 package ucase
 
 import (
+	"errors"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -10,6 +12,7 @@ import (
 	"backend/domain/enum"
 	"backend/domain/model"
 	bcrypt_util "backend/utils/bcrypt"
+	"backend/utils/helper"
 )
 
 func TestAuthUcase_Login(t *testing.T) {
@@ -135,4 +138,55 @@ func TestAuthUcase_Register(t *testing.T) {
 	assert.Nil(t, resp)
 	assert.Contains(t, err.Error(), "already exists")
 
+}
+
+func TestAuthUcase_RefreshToken(t *testing.T) {
+	// setup
+	SetupTest()
+
+	// data
+	payload := dto.RefreshTokenReq{
+		RefreshToken: "valid-token",
+	}
+
+	// test success
+	t.Log("test success")
+	expiredAt := helper.TimeNowUTC().Add(1 * time.Hour)
+	existingRefreshToken := &model.RefreshToken{
+		UUID:      "test-uuid",
+		UserID:    1,
+		UserUUID:  "test-user-uuid",
+		Token:     "valid-token",
+		UsedAt:    nil,
+		ExpiredAt: &expiredAt,
+		Invalid:   false,
+	}
+	MockedRefreshTokenRepo.On("GetByToken", payload.RefreshToken).Return(existingRefreshToken, nil).Once()
+	MockedRefreshTokenRepo.On("Update", mock.MatchedBy(func(token *model.RefreshToken) bool {
+		// ignore UsedAt
+		return token.UUID == existingRefreshToken.UUID &&
+			token.UserID == existingRefreshToken.UserID &&
+			token.UserUUID == existingRefreshToken.UserUUID &&
+			token.Token == existingRefreshToken.Token &&
+			token.ExpiredAt == existingRefreshToken.ExpiredAt &&
+			token.Invalid == existingRefreshToken.Invalid
+	})).Return(existingRefreshToken, nil)
+	refreshTokenUser := &model.User{
+		UUID: existingRefreshToken.UserUUID,
+	}
+	MockedUserRepo.On("GetByID", existingRefreshToken.UserID).Return(refreshTokenUser, nil)
+	MockedRefreshTokenRepo.On("InvalidateManyByUserUUID", existingRefreshToken.UserUUID).Return(nil)
+	expiredAt = helper.TimeNowUTC().Add(1 * time.Hour)
+	MockedRefreshTokenRepo.On("Create", mock.Anything).Return(&model.RefreshToken{}, nil)
+	resp, err := TestAuthUcase.RefreshToken(payload)
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+
+	// test invalid token
+	t.Log("test invalid token")
+	MockedRefreshTokenRepo.On("GetByToken", payload.RefreshToken).Return(nil, errors.New("not found")).Once()
+	resp, err = TestAuthUcase.RefreshToken(payload)
+	assert.Error(t, err)
+	assert.Nil(t, resp)
+	assert.Contains(t, err.Error(), "Invalid Refresh Token")
 }
