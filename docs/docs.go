@@ -92,6 +92,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/login/dev": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "login dev",
+                "parameters": [
+                    {
+                        "description": "payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginDevReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseJSONResp"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/dto.LoginDevResp"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "data": {
+                                                            "$ref": "#/definitions/dto.LoginRespData"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/auth/refresh-token": {
             "post": {
                 "tags": [
@@ -212,6 +263,38 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.LoginDevReq": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "description": "username or email, but swagger oauth2password need username field",
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginDevResp": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "detail": {},
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.LoginReq": {
             "type": "object",
             "required": [
@@ -292,11 +375,11 @@ const docTemplate = `{
         }
     },
     "securityDefinitions": {
-        "BearerAuth": {
+        "OAuth2Password": {
             "description": "JWT Authorization header using the Bearer scheme (add 'Bearer ' prefix).",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
+            "type": "oauth2",
+            "flow": "password",
+            "tokenUrl": "/auth/login/dev"
         }
     }
 }`
@@ -307,7 +390,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Auth Service RESTful API",
+	Title:            "Loan Backend API",
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

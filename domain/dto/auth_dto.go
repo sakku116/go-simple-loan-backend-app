@@ -19,8 +19,8 @@ type RegisterUserRespData struct {
 }
 
 type LoginDevReq struct {
-	UsernameOrEmail string `form:"username_or_email" validate:"required"`
-	Password        string `form:"password" validate:"required"`
+	Username string `form:"username" validate:"required"` // username or email, but swagger oauth2password need username field
+	Password string `form:"password" validate:"required"`
 }
 
 type LoginReq struct {

@@ -56,7 +56,7 @@ func (ucase *UserUcase) GetByUUID(ctx context.Context, ginCtx *gin.Context, user
 	}
 
 	return &dto.GetUserByUUIDResp{
-		UUID:      user.UUID.String(),
+		UUID:      user.UUID,
 		Username:  user.Username,
 		Email:     user.Email,
 		Role:      user.Role.String(),
@@ -127,7 +127,7 @@ func (ucase *UserUcase) CreateUser(
 
 	// create user
 	user = &model.User{
-		UUID:     uuid.New(),
+		UUID:     uuid.New().String(),
 		Username: payload.Username,
 		Password: password,
 		Email:    payload.Email,
@@ -144,7 +144,7 @@ func (ucase *UserUcase) CreateUser(
 	}
 
 	return &dto.CreateUserRespData{
-		UUID:      user.UUID.String(),
+		UUID:      user.UUID,
 		Username:  user.Username,
 		Email:     user.Email,
 		Role:      user.Role.String(),
@@ -235,7 +235,7 @@ func (ucase *UserUcase) UpdateUser(
 	}
 
 	return &dto.UpdateUserRespData{
-		UUID:      user.UUID.String(),
+		UUID:      user.UUID,
 		Username:  user.Username,
 		Email:     user.Email,
 		Role:      user.Role.String(),
@@ -263,7 +263,7 @@ func (ucase *UserUcase) DeleteUser(
 	}
 
 	// delete user
-	err = ucase.userRepo.Delete(user.UUID.String())
+	err = ucase.userRepo.Delete(user.UUID)
 	if err != nil {
 		if err.Error() == "not found" {
 			return nil, &error_utils.CustomErr{
@@ -276,7 +276,7 @@ func (ucase *UserUcase) DeleteUser(
 	}
 
 	return &dto.DeleteUserRespData{
-		UUID:      user.UUID.String(),
+		UUID:      user.UUID,
 		Username:  user.Username,
 		Email:     user.Email,
 		Role:      user.Role.String(),

@@ -13,7 +13,7 @@ func GenerateJwtToken(user *model.User, secretKey string, expMins int, tokenId *
 	JWT_SIGNATURE_KEY := []byte(secretKey)
 
 	claims := jwt.MapClaims{
-		"sub":      user.UUID.String(),
+		"sub":      user.UUID,
 		"username": user.Username,
 		"email":    user.Email,
 		"exp":      time.Now().Add(time.Minute * time.Duration(expMins)).Unix(),

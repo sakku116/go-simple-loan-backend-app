@@ -26,6 +26,28 @@ definitions:
       uuid:
         type: string
     type: object
+  dto.LoginDevReq:
+    properties:
+      password:
+        type: string
+      username:
+        description: username or email, but swagger oauth2password need username field
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  dto.LoginDevResp:
+    properties:
+      access_token:
+        type: string
+      code:
+        type: integer
+      data: {}
+      detail: {}
+      message:
+        type: string
+    type: object
   dto.LoginReq:
     properties:
       password:
@@ -79,7 +101,7 @@ definitions:
     type: object
 info:
   contact: {}
-  title: Auth Service RESTful API
+  title: Loan Backend API
 paths:
   /auth/check-token:
     post:
@@ -122,6 +144,33 @@ paths:
                   $ref: '#/definitions/dto.LoginRespData'
               type: object
       summary: login
+      tags:
+      - Auth
+  /auth/login/dev:
+    post:
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginDevReq'
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  allOf:
+                  - $ref: '#/definitions/dto.LoginDevResp'
+                  - properties:
+                      data:
+                        $ref: '#/definitions/dto.LoginRespData'
+                    type: object
+              type: object
+      summary: login dev
       tags:
       - Auth
   /auth/refresh-token:
@@ -168,9 +217,9 @@ paths:
       tags:
       - Auth
 securityDefinitions:
-  BearerAuth:
+  OAuth2Password:
     description: JWT Authorization header using the Bearer scheme (add 'Bearer ' prefix).
-    in: header
-    name: Authorization
-    type: apiKey
+    flow: password
+    tokenUrl: /auth/login/dev
+    type: oauth2
 swagger: "2.0"

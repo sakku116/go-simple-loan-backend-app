@@ -51,7 +51,7 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 // @Tags Auth
 // @Success 200 {object} dto.BaseJSONResp{data=dto.LoginDevResp{data=dto.LoginRespData}}
 // @Router /auth/login/dev [post]
-// @param payload  body  dto.LoginReq  true "payload"
+// @param payload  body  dto.LoginDevReq  true "payload"
 func (h *AuthHandler) LoginDev(ctx *gin.Context) {
 	var payload dto.LoginDevReq
 	err := ctx.ShouldBind(&payload)
@@ -62,7 +62,7 @@ func (h *AuthHandler) LoginDev(ctx *gin.Context) {
 
 	// convert payload
 	newPayload := dto.LoginReq{
-		UsernameOrEmail: payload.UsernameOrEmail,
+		UsernameOrEmail: payload.Username,
 		Password:        payload.Password,
 	}
 

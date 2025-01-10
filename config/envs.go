@@ -16,7 +16,7 @@ type EnvsSchema struct {
 	MYSQL_PORT       int
 	MYSQL_USER       string
 	MYSQL_PASSWORD   string
-	MYSQL_DB         string
+	MYSQL_DATABASE   string
 	MINIO_ACCESS_KEY string
 	MINIO_SECRET_KEY string
 
@@ -41,7 +41,7 @@ func envInitiator() {
 		MYSQL_PORT:       viper.GetInt("MYSQL_PORT"),
 		MYSQL_USER:       viper.GetString("MYSQL_USER"),
 		MYSQL_PASSWORD:   viper.GetString("MYSQL_PASSWORD"),
-		MYSQL_DB:         viper.GetString("MYSQL_DB"),
+		MYSQL_DATABASE:   viper.GetString("MYSQL_DATABASE"),
 		MINIO_ACCESS_KEY: viper.GetString("MINIO_ACCESS_KEY"),
 		MINIO_SECRET_KEY: viper.GetString("MINIO_SECRET_KEY"),
 

@@ -19,7 +19,7 @@ func SeedUser(userRepo repository.IUserRepo) error {
 	if config.Envs.INITIAL_ADMIN_USERNAME != "" && config.Envs.INITIAL_ADMIN_PASSWORD != "" {
 		hashedPassword, _ := bcrypt_util.Hash(config.Envs.INITIAL_ADMIN_PASSWORD)
 		users = append(users, model.User{
-			UUID:     uuid.New(),
+			UUID:     uuid.New().String(),
 			Username: config.Envs.INITIAL_ADMIN_USERNAME,
 			Password: hashedPassword,
 			Email:    fmt.Sprint(config.Envs.INITIAL_ADMIN_USERNAME, "@gmail.com"),
@@ -32,7 +32,7 @@ func SeedUser(userRepo repository.IUserRepo) error {
 	if config.Envs.INITIAL_USER_USERNAME != "" && config.Envs.INITIAL_USER_PASSWORD != "" {
 		hashedPassword, _ := bcrypt_util.Hash(config.Envs.INITIAL_USER_PASSWORD)
 		users = append(users, model.User{
-			UUID:     uuid.New(),
+			UUID:     uuid.New().String(),
 			Username: config.Envs.INITIAL_USER_USERNAME,
 			Password: hashedPassword,
 			Email:    fmt.Sprint(config.Envs.INITIAL_USER_USERNAME, "@gmail.com"),

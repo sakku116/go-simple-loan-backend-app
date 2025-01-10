@@ -98,7 +98,7 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 
 	// create user
 	user = &model.User{
-		UUID:     uuid.New(),
+		UUID:     uuid.New().String(),
 		Username: payload.Username,
 		Password: password,
 		Email:    payload.Email,
@@ -122,11 +122,12 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 	}
 
 	// invalidate old refresh token
-	s.refreshTokenRepo.InvalidateManyByUserUUID(user.UUID.String())
+	s.refreshTokenRepo.InvalidateManyByUserUUID(user.UUID)
 
 	// create refresh token
 	refreshTokenExpiredAt := helper.TimeNowUTC().Add(time.Minute * time.Duration(config.Envs.REFRESH_TOKEN_EXP_MINS))
 	newRefreshTokenObj := model.RefreshToken{
+		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
 		UserUUID:  user.UUID,
 		UsedAt:    nil,
@@ -211,7 +212,7 @@ func (s *AuthUcase) Login(payload dto.LoginReq) (*dto.LoginRespData, error) {
 	}
 
 	// invalidate old refresh token
-	err = s.refreshTokenRepo.InvalidateManyByUserUUID(existing_user.UUID.String())
+	err = s.refreshTokenRepo.InvalidateManyByUserUUID(existing_user.UUID)
 	if err != nil {
 		logger.Errorf("error invalidating old refresh token: %v", err)
 		return nil, err
@@ -220,6 +221,7 @@ func (s *AuthUcase) Login(payload dto.LoginReq) (*dto.LoginRespData, error) {
 	// create refresh token
 	refreshTokenExpiredAt := helper.TimeNowUTC().Add(time.Minute * time.Duration(config.Envs.REFRESH_TOKEN_EXP_MINS))
 	newRefreshTokenObj := model.RefreshToken{
+		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
 		UserUUID:  existing_user.UUID,
 		UsedAt:    nil,
@@ -288,7 +290,7 @@ func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshToken
 	}
 
 	// get user
-	user, err := s.userRepo.GetByUUID(refreshToken.UserUUID.String())
+	user, err := s.userRepo.GetByUUID(refreshToken.UserUUID)
 	if err != nil {
 		logger.Errorf("user not found: %v", err)
 		return nil, &error_utils.CustomErr{
@@ -306,7 +308,7 @@ func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshToken
 	}
 
 	// invalidate old refresh token
-	err = s.refreshTokenRepo.InvalidateManyByUserUUID(user.UUID.String())
+	err = s.refreshTokenRepo.InvalidateManyByUserUUID(user.UUID)
 	if err != nil {
 		logger.Errorf("error invalidating old refresh token: %v", err)
 		return nil, err
@@ -315,6 +317,7 @@ func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshToken
 	// create refresh token
 	refreshTokenExpiredAt := helper.TimeNowUTC().Add(time.Minute * time.Duration(config.Envs.REFRESH_TOKEN_EXP_MINS))
 	newRefreshTokenObj := model.RefreshToken{
+		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
 		UserUUID:  user.UUID,
 		UsedAt:    nil,

@@ -5,17 +5,16 @@ import (
 	validator_util "backend/utils/validator/user"
 	"errors"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type User struct {
 	gorm.Model
-	UUID     uuid.UUID     `gorm:"type:uuid;unique;not null" json:"uuid"`
-	Username string        `gorm:"unique;not null" json:"username"`
-	Password string        `gorm:"not null" json:"password"`
-	Email    string        `json:"email"`
-	Role     enum.UserRole `json:"role"`
+	UUID     string        `gorm:"type:varchar(36);unique;not null" json:"uuid"`
+	Username string        `gorm:"type:varchar(255);unique;not null" json:"username"`
+	Password string        `gorm:"type:varchar(255);not null" json:"-"`
+	Email    string        `gorm:"type:varchar(255);email not null" json:"email"`
+	Role     enum.UserRole `gorm:"type:varchar(255);not null" json:"role"`
 
 	RefreshTokens []RefreshToken `gorm:"foreignKey:UserUUID;references:UUID;" json:"-"`
 }
