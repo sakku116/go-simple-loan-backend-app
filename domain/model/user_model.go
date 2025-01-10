@@ -20,7 +20,7 @@ type User struct {
 	NIK           string        `gorm:"type:varchar(255);not null" json:"nik"`
 	Birthplace    string        `gorm:"type:varchar(255);not null" json:"birthplace"`
 	Birthdate     string        `gorm:"type:varchar(255);not null" json:"birthdate"` // DD-MM-YYYY
-	CurrentSalary int64         `gorm:"type:varchar(255);not null" json:"current_salary"`
+	CurrentSalary int64         `gorm:"type:bigint;not null" json:"current_salary"`
 
 	// these are required for requesting for loan
 	KtpPhoto  *string `gorm:"type:varchar(255);null" json:"ktpphoto"`
