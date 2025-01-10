@@ -346,12 +346,37 @@ const docTemplate = `{
         "dto.RegisterUserReq": {
             "type": "object",
             "required": [
+                "birthdate",
+                "birthplace",
+                "current_salary",
                 "email",
+                "fullname",
+                "legalname",
+                "nik",
                 "password",
                 "username"
             ],
             "properties": {
+                "birthdate": {
+                    "description": "DD-MM-YYYY",
+                    "type": "string"
+                },
+                "birthplace": {
+                    "type": "string"
+                },
+                "current_salary": {
+                    "type": "integer"
+                },
                 "email": {
+                    "type": "string"
+                },
+                "fullname": {
+                    "type": "string"
+                },
+                "legalname": {
+                    "type": "string"
+                },
+                "nik": {
                     "type": "string"
                 },
                 "password": {

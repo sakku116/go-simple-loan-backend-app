@@ -12,13 +12,13 @@ type UserRepo struct {
 }
 
 type IUserRepo interface {
-	Create(user *model.User) error
+	Create(user *model.User) (*model.User, error)
 	GetByUUID(uuid string) (*model.User, error)
 	GetByID(id uint) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
 	GetByNIK(nik string) (*model.User, error)
 	GetByEmail(email string) (*model.User, error)
-	Update(user *model.User) error
+	Update(user *model.User) (*model.User, error)
 	Delete(id string) error
 }
 
@@ -26,12 +26,12 @@ func NewUserRepo(db *gorm.DB) IUserRepo {
 	return &UserRepo{db: db}
 }
 
-func (repo *UserRepo) Create(user *model.User) error {
+func (repo *UserRepo) Create(user *model.User) (*model.User, error) {
 	err := repo.db.Create(user).Error
 	if err != nil {
-		return errors.New("failed to create user")
+		return nil, errors.New("failed to create user")
 	}
-	return err
+	return user, err
 }
 
 func (repo *UserRepo) GetByUUID(uuid string) (*model.User, error) {
@@ -89,9 +89,9 @@ func (repo *UserRepo) GetByEmail(email string) (*model.User, error) {
 	return &user, nil
 }
 
-func (repo *UserRepo) Update(user *model.User) error {
+func (repo *UserRepo) Update(user *model.User) (*model.User, error) {
 	err := repo.db.Save(user).Error
-	return err
+	return user, err
 }
 
 func (repo *UserRepo) Delete(id string) error {
@@ -102,5 +102,5 @@ func (repo *UserRepo) Delete(id string) error {
 		}
 		return errors.New("failed to delete: " + err.Error())
 	}
-	return err
+	return nil
 }

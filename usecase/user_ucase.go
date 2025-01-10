@@ -124,7 +124,7 @@ func (ucase *UserUcase) CreateUser(
 		return nil, err
 	}
 
-	err = ucase.userRepo.Create(user)
+	user, err = ucase.userRepo.Create(user)
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +187,7 @@ func (ucase *UserUcase) UpdateUser(
 	}
 
 	// update user
-	err = ucase.userRepo.Update(user)
+	user, err = ucase.userRepo.Update(user)
 	if err != nil {
 		return nil, err
 	}

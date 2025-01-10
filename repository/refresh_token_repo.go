@@ -12,9 +12,9 @@ type RefreshTokenRepo struct {
 }
 
 type IRefreshTokenRepo interface {
-	Create(refresh_token *model.RefreshToken) error
+	Create(refresh_token *model.RefreshToken) (*model.RefreshToken, error)
 	GetByToken(token string) (*model.RefreshToken, error)
-	Update(refresh_token *model.RefreshToken) error
+	Update(refresh_token *model.RefreshToken) (*model.RefreshToken, error)
 	Delete(id string) error
 	InvalidateManyByUserUUID(userUUID string) error
 }
@@ -23,9 +23,9 @@ func NewRefreshTokenRepo(db *gorm.DB) IRefreshTokenRepo {
 	return &RefreshTokenRepo{db: db}
 }
 
-func (repo *RefreshTokenRepo) Create(refresh_token *model.RefreshToken) error {
+func (repo *RefreshTokenRepo) Create(refresh_token *model.RefreshToken) (*model.RefreshToken, error) {
 	err := repo.db.Create(refresh_token).Error
-	return err
+	return refresh_token, err
 }
 
 func (repo *RefreshTokenRepo) GetByToken(token string) (*model.RefreshToken, error) {
@@ -61,9 +61,9 @@ func (repo *RefreshTokenRepo) GetByEmail(email string) (*model.RefreshToken, err
 	return &refresh_token, nil
 }
 
-func (repo *RefreshTokenRepo) Update(refresh_token *model.RefreshToken) error {
+func (repo *RefreshTokenRepo) Update(refresh_token *model.RefreshToken) (*model.RefreshToken, error) {
 	err := repo.db.Save(refresh_token).Error
-	return err
+	return refresh_token, err
 }
 
 func (repo *RefreshTokenRepo) Delete(id string) error {

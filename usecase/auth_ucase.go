@@ -3,6 +3,7 @@ package ucase
 import (
 	"backend/config"
 	"backend/domain/dto"
+	"backend/domain/enum"
 	"backend/domain/model"
 	"backend/repository"
 	bcrypt_util "backend/utils/bcrypt"
@@ -61,6 +62,7 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 	}
 
 	user, _ = s.userRepo.GetByUsername(payload.Username)
+	logger.Debugf("user by username: %v", user)
 	if user != nil {
 		logger.Errorf("user with username %s already exists", payload.Username)
 		return nil, &error_utils.CustomErr{
@@ -91,7 +93,7 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 		Username:      payload.Username,
 		Password:      password,
 		Email:         payload.Email,
-		Role:          "user",
+		Role:          enum.UserRole_User,
 		Fullname:      payload.Fullname,
 		Legalname:     payload.Legalname,
 		NIK:           payload.NIK,
@@ -104,7 +106,7 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 		return nil, err
 	}
 
-	err = s.userRepo.Create(user)
+	user, err = s.userRepo.Create(user)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +123,7 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 
 	// create refresh token
 	refreshTokenExpiredAt := helper.TimeNowUTC().Add(time.Minute * time.Duration(config.Envs.REFRESH_TOKEN_EXP_MINS))
-	newRefreshTokenObj := model.RefreshToken{
+	newRefreshTokenObj := &model.RefreshToken{
 		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
 		UserID:    user.ID,
@@ -130,7 +132,7 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 		ExpiredAt: &refreshTokenExpiredAt,
 	}
 	logger.Debugf("new refresh token: %+v", newRefreshTokenObj)
-	err = s.refreshTokenRepo.Create(&newRefreshTokenObj)
+	newRefreshTokenObj, err = s.refreshTokenRepo.Create(newRefreshTokenObj)
 	if err != nil {
 		logger.Errorf("error creating refresh token: %v", err)
 		return nil, err
@@ -194,7 +196,7 @@ func (s *AuthUcase) Login(payload dto.LoginReq) (*dto.LoginRespData, error) {
 
 	// create refresh token
 	refreshTokenExpiredAt := helper.TimeNowUTC().Add(time.Minute * time.Duration(config.Envs.REFRESH_TOKEN_EXP_MINS))
-	newRefreshTokenObj := model.RefreshToken{
+	newRefreshTokenObj := &model.RefreshToken{
 		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
 		UserID:    existing_user.ID,
@@ -203,7 +205,7 @@ func (s *AuthUcase) Login(payload dto.LoginReq) (*dto.LoginRespData, error) {
 		ExpiredAt: &refreshTokenExpiredAt,
 	}
 	logger.Debugf("new refresh token: %+v", helper.PrettyJson(newRefreshTokenObj))
-	err = s.refreshTokenRepo.Create(&newRefreshTokenObj)
+	newRefreshTokenObj, err = s.refreshTokenRepo.Create(newRefreshTokenObj)
 	if err != nil {
 		logger.Errorf("error creating refresh token: %v", err)
 		return nil, err
@@ -258,7 +260,7 @@ func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshToken
 	// mark refresh token as used
 	timeNow := helper.TimeNowUTC()
 	refreshToken.UsedAt = &timeNow
-	err = s.refreshTokenRepo.Update(refreshToken)
+	refreshToken, err = s.refreshTokenRepo.Update(refreshToken)
 	if err != nil {
 		logger.Errorf("error updating refresh token: %v", err)
 		return nil, err
@@ -291,7 +293,7 @@ func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshToken
 
 	// create refresh token
 	refreshTokenExpiredAt := helper.TimeNowUTC().Add(time.Minute * time.Duration(config.Envs.REFRESH_TOKEN_EXP_MINS))
-	newRefreshTokenObj := model.RefreshToken{
+	newRefreshTokenObj := &model.RefreshToken{
 		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
 		UserID:    user.ID,
@@ -299,7 +301,7 @@ func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshToken
 		UsedAt:    nil,
 		ExpiredAt: &refreshTokenExpiredAt,
 	}
-	err = s.refreshTokenRepo.Create(&newRefreshTokenObj)
+	newRefreshTokenObj, err = s.refreshTokenRepo.Create(newRefreshTokenObj)
 	if err != nil {
 		logger.Errorf("error creating refresh token: %v", err)
 		return nil, err

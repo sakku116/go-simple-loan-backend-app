@@ -15,11 +15,11 @@ import (
 var logger = logging.MustGetLogger("main")
 
 func SeedUser(userRepo repository.IUserRepo) error {
-	users := []model.User{}
+	users := []*model.User{}
 
 	if config.Envs.INITIAL_ADMIN_USERNAME != "" && config.Envs.INITIAL_ADMIN_PASSWORD != "" {
 		hashedPassword, _ := bcrypt_util.Hash(config.Envs.INITIAL_ADMIN_PASSWORD)
-		users = append(users, model.User{
+		users = append(users, &model.User{
 			UUID:          uuid.New().String(),
 			Username:      config.Envs.INITIAL_ADMIN_USERNAME,
 			Password:      hashedPassword,
@@ -38,7 +38,7 @@ func SeedUser(userRepo repository.IUserRepo) error {
 
 	if config.Envs.INITIAL_USER_USERNAME != "" && config.Envs.INITIAL_USER_PASSWORD != "" {
 		hashedPassword, _ := bcrypt_util.Hash(config.Envs.INITIAL_USER_PASSWORD)
-		users = append(users, model.User{
+		users = append(users, &model.User{
 			UUID:          uuid.New().String(),
 			Username:      config.Envs.INITIAL_USER_USERNAME,
 			Password:      hashedPassword,
@@ -73,7 +73,7 @@ func SeedUser(userRepo repository.IUserRepo) error {
 		}
 
 		// create user
-		err = userRepo.Create(&user)
+		user, err = userRepo.Create(user)
 		if err != nil {
 			logger.Warningf("failed to seed user: %s", user.Username)
 			continue
