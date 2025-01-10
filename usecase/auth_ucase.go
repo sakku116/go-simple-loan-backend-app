@@ -9,7 +9,6 @@ import (
 	error_utils "backend/utils/error"
 	"backend/utils/helper"
 	jwt_util "backend/utils/jwt"
-	validator_util "backend/utils/validator/user"
 	"fmt"
 	"strings"
 	"time"
@@ -42,27 +41,8 @@ func NewAuthUcase(
 
 func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dto.RegisterUserRespData, error) {
 	// validate input
-	err := validator_util.ValidateUsername(payload.Username)
+	err := payload.Validate()
 	if err != nil {
-		logger.Errorf("error validating username: %s", err.Error())
-		return nil, &error_utils.CustomErr{
-			HttpCode: 400,
-			Message:  err.Error(),
-		}
-	}
-
-	err = validator_util.ValidateEmail(payload.Email)
-	if err != nil {
-		logger.Errorf("error validating email: %s", err.Error())
-		return nil, &error_utils.CustomErr{
-			HttpCode: 400,
-			Message:  err.Error(),
-		}
-	}
-
-	err = validator_util.ValidatePassword(payload.Password)
-	if err != nil {
-		logger.Errorf("error validating password: %s", err.Error())
 		return nil, &error_utils.CustomErr{
 			HttpCode: 400,
 			Message:  err.Error(),
@@ -149,31 +129,9 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 }
 
 func (s *AuthUcase) Login(payload dto.LoginReq) (*dto.LoginRespData, error) {
-	// validate username
-	if strings.Contains(payload.UsernameOrEmail, "@") {
-		err := validator_util.ValidateEmail(payload.UsernameOrEmail)
-		if err != nil {
-			logger.Errorf("invalid username: %s\n%v", payload.UsernameOrEmail, err)
-			return nil, &error_utils.CustomErr{
-				HttpCode: 400,
-				Message:  err.Error(),
-			}
-		}
-	} else {
-		err := validator_util.ValidateUsername(payload.UsernameOrEmail)
-		if err != nil {
-			logger.Errorf("invalid email: %s\n%v", payload.UsernameOrEmail, err)
-			return nil, &error_utils.CustomErr{
-				HttpCode: 400,
-				Message:  err.Error(),
-			}
-		}
-	}
-
-	// validate password
-	err := validator_util.ValidatePassword(payload.Password)
+	// validate input
+	err := payload.Validate()
 	if err != nil {
-		logger.Errorf("invalid password: %s\n%v", payload.Password, err)
 		return nil, &error_utils.CustomErr{
 			HttpCode: 400,
 			Message:  err.Error(),

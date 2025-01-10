@@ -1,5 +1,10 @@
 package dto
 
+import (
+	validator_util "backend/utils/validator/user"
+	"strings"
+)
+
 type CurrentUser struct {
 	UUID     string `json:"uuid"`
 	Username string `json:"username"`
@@ -13,6 +18,25 @@ type RegisterUserReq struct {
 	Password string `json:"password" validate:"required"`
 }
 
+func (req *RegisterUserReq) Validate() error {
+	err := validator_util.ValidateEmail(req.Email)
+	if err != nil {
+		return err
+	}
+
+	err = validator_util.ValidateUsername(req.Username)
+	if err != nil {
+		return err
+	}
+
+	err = validator_util.ValidatePassword(req.Password)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type RegisterUserRespData struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -23,9 +47,49 @@ type LoginDevReq struct {
 	Password string `form:"password" validate:"required"`
 }
 
+func (req *LoginDevReq) Validate() error {
+	if strings.Contains(req.Username, "@") {
+		err := validator_util.ValidateEmail(req.Username)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := validator_util.ValidateUsername(req.Username)
+		if err != nil {
+			return err
+		}
+	}
+	err := validator_util.ValidatePassword(req.Password)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type LoginReq struct {
 	UsernameOrEmail string `json:"username_or_email" validate:"required"`
 	Password        string `json:"password" validate:"required"`
+}
+
+func (req *LoginReq) Validate() error {
+	if strings.Contains(req.UsernameOrEmail, "@") {
+		err := validator_util.ValidateEmail(req.UsernameOrEmail)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := validator_util.ValidateUsername(req.UsernameOrEmail)
+		if err != nil {
+			return err
+		}
+	}
+	err := validator_util.ValidatePassword(req.Password)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type LoginRespData struct {
