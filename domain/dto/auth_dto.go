@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"backend/domain/enum"
+	"backend/domain/model"
 	validator_util "backend/utils/validator/user"
 	"strings"
 )
@@ -13,23 +15,31 @@ type CurrentUser struct {
 }
 
 type RegisterUserReq struct {
-	Email    string `json:"email" validate:"required,email"`
-	Username string `json:"username" validate:"required"`
-	Password string `json:"password" validate:"required"`
+	Email         string `json:"email" validate:"required,email"`
+	Username      string `json:"username" validate:"required"`
+	Password      string `json:"password" validate:"required"`
+	Fullname      string `json:"fullname" validate:"required"`
+	Legalname     string `json:"legalname" validate:"required"`
+	NIK           string `json:"nik" validate:"required"`
+	Birthplace    string `json:"birthplace" validate:"required"`
+	Birthdate     string `json:"birthdate" validate:"required"` // DD-MM-YYYY
+	CurrentSalary int64  `json:"current_salary" validate:"required"`
 }
 
 func (req *RegisterUserReq) Validate() error {
-	err := validator_util.ValidateEmail(req.Email)
-	if err != nil {
-		return err
+	tmp := model.User{
+		Username:   req.Username,
+		Email:      req.Email,
+		Password:   req.Password,
+		Role:       enum.UserRole("user"),
+		Fullname:   req.Fullname,
+		NIK:        req.NIK,
+		Legalname:  req.Legalname,
+		Birthplace: req.Birthplace,
+		Birthdate:  req.Birthdate,
 	}
 
-	err = validator_util.ValidateUsername(req.Username)
-	if err != nil {
-		return err
-	}
-
-	err = validator_util.ValidatePassword(req.Password)
+	err := tmp.Validate()
 	if err != nil {
 		return err
 	}

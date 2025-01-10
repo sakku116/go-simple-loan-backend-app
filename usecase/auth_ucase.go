@@ -69,6 +69,15 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 		}
 	}
 
+	user, _ = s.userRepo.GetByNIK(payload.NIK)
+	if user != nil {
+		logger.Errorf("user with nik %s already exists", payload.NIK)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 400,
+			Message:  fmt.Sprintf("user with nik %s already exists", payload.NIK),
+		}
+	}
+
 	// create password
 	password, err := bcrypt_util.Hash(payload.Password)
 	if err != nil {
@@ -78,11 +87,17 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 
 	// create user
 	user = &model.User{
-		UUID:     uuid.New().String(),
-		Username: payload.Username,
-		Password: password,
-		Email:    payload.Email,
-		Role:     "user",
+		UUID:          uuid.New().String(),
+		Username:      payload.Username,
+		Password:      password,
+		Email:         payload.Email,
+		Role:          "user",
+		Fullname:      payload.Fullname,
+		Legalname:     payload.Legalname,
+		NIK:           payload.NIK,
+		Birthplace:    payload.Birthplace,
+		Birthdate:     payload.Birthdate,
+		CurrentSalary: payload.CurrentSalary,
 	}
 	err = user.Validate()
 	if err != nil {

@@ -1,25 +1,33 @@
-Table users {
-  id uint [primary key]
+table users {
+  id            uint      [primary key]
   created_at time
-  updated_at time
-  deleted_at time [null]
-  uuid varchar
-  username varchar
-  email varchar
-  password varchar
-  role varchar
+  updated_at    time
+  deleted_at    time [null]
+  uuid          varchar(36) [unique, not null]
+  username      varchar(255) [unique, not null]
+  email         varchar(255) [not null]
+  password      varchar(255) [not null]
+  role          varchar(255) [not null]
+  fullname      varchar(255) [not null]
+  legalname     varchar(255) [not null]
+  nik           varchar(255) [not null]
+  birthplace    varchar(255) [not null]
+  birthdate     varchar(255) [not null]
+  current_salary bigint   [not null]
+  ktpphoto      varchar(255) [null]
+  facephoto     varchar(255) [null]
 }
 
-Table refresh_tokens {
-  id uint [primary key]
-  created_at time
-  updated_at time
-  deleted_at time [null]
-  uuid varchar
-  user_id uint [ref: > users.id]
-  user_uuid varchar
-  token varchar
-  used_at time [null]
-  expired_at time [null]
-  invalid bool
+table refresh_tokens {
+  id          uint      [primary key]
+  created_at  time
+  updated_at  time
+  deleted_at  time [null]
+  uuid        varchar(36) [unique, not null]
+  user_id     uint        [not null, ref: > users.id]
+  user_uuid   varchar(36) [not null]
+  token       varchar(36) [unique, not null]
+  used_at     datetime    [null]
+  expired_at  datetime    [null]
+  invalid     bool        [default: false, not null]
 }

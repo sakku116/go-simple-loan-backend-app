@@ -16,6 +16,7 @@ type IUserRepo interface {
 	GetByUUID(uuid string) (*model.User, error)
 	GetByID(id uint) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
+	GetByNIK(nik string) (*model.User, error)
 	GetByEmail(email string) (*model.User, error)
 	Update(user *model.User) error
 	Delete(id string) error
@@ -58,6 +59,17 @@ func (repo *UserRepo) GetByID(id uint) (*model.User, error) {
 func (repo *UserRepo) GetByUsername(username string) (*model.User, error) {
 	var user model.User
 	if err := repo.db.First(&user, "username = ?", username).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return &user, nil
+}
+
+func (repo *UserRepo) GetByNIK(nik string) (*model.User, error) {
+	var user model.User
+	if err := repo.db.First(&user, "nik = ?", nik).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errors.New("user not found")
 		}

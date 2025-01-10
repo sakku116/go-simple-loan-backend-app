@@ -2,6 +2,7 @@ package dto
 
 import (
 	"backend/domain/enum"
+	"backend/domain/model"
 	validator_util "backend/utils/validator/user"
 	"time"
 )
@@ -16,24 +17,32 @@ type GetUserByUUIDResp struct {
 }
 
 type CreateUserReq struct {
-	Username string        `json:"username" binding:"required"`
-	Email    string        `json:"email" binding:"required,email"`
-	Password string        `json:"password" binding:"required"`
-	Role     enum.UserRole `json:"role" binding:"required,oneof=admin user"`
+	Username      string        `json:"username" binding:"required"`
+	Email         string        `json:"email" binding:"required,email"`
+	Password      string        `json:"password" binding:"required"`
+	Role          enum.UserRole `json:"role" binding:"required,oneof=admin user"`
+	Fullname      string        `json:"fullname" validate:"required"`
+	Legalname     string        `json:"legalname" validate:"required"`
+	NIK           string        `json:"nik" validate:"required"`
+	Birthplace    string        `json:"birthplace" validate:"required"`
+	Birthdate     string        `json:"birthdate" validate:"required"` // DD-MM-YYYY
+	CurrentSalary int64         `json:"current_salary" validate:"required"`
 }
 
 func (req *CreateUserReq) Validate() error {
-	err := validator_util.ValidateUsername(req.Username)
-	if err != nil {
-		return err
+	tmp := model.User{
+		Username:   req.Username,
+		Email:      req.Email,
+		Password:   req.Password,
+		Role:       req.Role,
+		Fullname:   req.Fullname,
+		NIK:        req.NIK,
+		Legalname:  req.Legalname,
+		Birthplace: req.Birthplace,
+		Birthdate:  req.Birthdate,
 	}
 
-	err = validator_util.ValidateEmail(req.Email)
-	if err != nil {
-		return err
-	}
-
-	err = validator_util.ValidatePassword(req.Password)
+	err := tmp.Validate()
 	if err != nil {
 		return err
 	}

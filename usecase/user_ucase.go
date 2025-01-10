@@ -107,11 +107,17 @@ func (ucase *UserUcase) CreateUser(
 
 	// create user
 	user = &model.User{
-		UUID:     uuid.New().String(),
-		Username: payload.Username,
-		Password: password,
-		Email:    payload.Email,
-		Role:     "user",
+		UUID:          uuid.New().String(),
+		Username:      payload.Username,
+		Password:      password,
+		Email:         payload.Email,
+		Role:          payload.Role,
+		Fullname:      payload.Fullname,
+		Legalname:     payload.Legalname,
+		NIK:           payload.NIK,
+		Birthplace:    payload.Birthplace,
+		Birthdate:     payload.Birthdate,
+		CurrentSalary: payload.CurrentSalary,
 	}
 	err = user.Validate()
 	if err != nil {
