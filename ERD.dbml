@@ -1,0 +1,25 @@
+Table users {
+  id uint [primary key]
+  created_at time
+  updated_at time
+  deleted_at time [null]
+  uuid varchar
+  username varchar
+  email varchar
+  password varchar
+  role varchar
+}
+
+Table refresh_tokens {
+  id uint [primary key]
+  created_at time
+  updated_at time
+  deleted_at time [null]
+  uuid varchar
+  user_id uint [ref: > users.id]
+  user_uuid varchar
+  token varchar
+  used_at time [null]
+  expired_at time [null]
+  invalid bool
+}
