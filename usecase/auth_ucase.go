@@ -129,6 +129,7 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 	newRefreshTokenObj := model.RefreshToken{
 		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
+		UserID:    user.ID,
 		UserUUID:  user.UUID,
 		UsedAt:    nil,
 		ExpiredAt: &refreshTokenExpiredAt,
@@ -223,6 +224,7 @@ func (s *AuthUcase) Login(payload dto.LoginReq) (*dto.LoginRespData, error) {
 	newRefreshTokenObj := model.RefreshToken{
 		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
+		UserID:    existing_user.ID,
 		UserUUID:  existing_user.UUID,
 		UsedAt:    nil,
 		ExpiredAt: &refreshTokenExpiredAt,
@@ -290,7 +292,7 @@ func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshToken
 	}
 
 	// get user
-	user, err := s.userRepo.GetByUUID(refreshToken.UserUUID)
+	user, err := s.userRepo.GetByID(refreshToken.UserID)
 	if err != nil {
 		logger.Errorf("user not found: %v", err)
 		return nil, &error_utils.CustomErr{
@@ -319,6 +321,7 @@ func (s *AuthUcase) RefreshToken(payload dto.RefreshTokenReq) (*dto.RefreshToken
 	newRefreshTokenObj := model.RefreshToken{
 		UUID:      uuid.New().String(),
 		Token:     uuid.New().String(),
+		UserID:    user.ID,
 		UserUUID:  user.UUID,
 		UsedAt:    nil,
 		ExpiredAt: &refreshTokenExpiredAt,

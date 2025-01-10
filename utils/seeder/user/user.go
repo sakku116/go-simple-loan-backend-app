@@ -2,6 +2,7 @@ package seeder_util
 
 import (
 	"backend/config"
+	"backend/domain/enum"
 	"backend/domain/model"
 	"backend/repository"
 	bcrypt_util "backend/utils/bcrypt"
@@ -23,7 +24,7 @@ func SeedUser(userRepo repository.IUserRepo) error {
 			Username: config.Envs.INITIAL_ADMIN_USERNAME,
 			Password: hashedPassword,
 			Email:    fmt.Sprint(config.Envs.INITIAL_ADMIN_USERNAME, "@gmail.com"),
-			Role:     "admin",
+			Role:     enum.UserRole("admin"),
 		})
 	} else {
 		logger.Warningf("initial admin username and password not set")
@@ -36,7 +37,7 @@ func SeedUser(userRepo repository.IUserRepo) error {
 			Username: config.Envs.INITIAL_USER_USERNAME,
 			Password: hashedPassword,
 			Email:    fmt.Sprint(config.Envs.INITIAL_USER_USERNAME, "@gmail.com"),
-			Role:     "user",
+			Role:     enum.UserRole("user"),
 		})
 	} else {
 		logger.Warningf("initial user username and password not set")

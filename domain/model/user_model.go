@@ -16,7 +16,7 @@ type User struct {
 	Email    string        `gorm:"type:varchar(255);email not null" json:"email"`
 	Role     enum.UserRole `gorm:"type:varchar(255);not null" json:"role"`
 
-	RefreshTokens []RefreshToken `gorm:"foreignKey:UserUUID;references:UUID;" json:"-"`
+	RefreshTokens []RefreshToken `gorm:"foreignKey:UserID;references:ID;" json:"-"`
 }
 
 func (u *User) Validate() (err error) {

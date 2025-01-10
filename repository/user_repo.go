@@ -14,6 +14,7 @@ type UserRepo struct {
 type IUserRepo interface {
 	Create(user *model.User) error
 	GetByUUID(uuid string) (*model.User, error)
+	GetByID(id uint) (*model.User, error)
 	GetByUsername(username string) (*model.User, error)
 	GetByEmail(email string) (*model.User, error)
 	Update(user *model.User) error
@@ -35,6 +36,17 @@ func (repo *UserRepo) Create(user *model.User) error {
 func (repo *UserRepo) GetByUUID(uuid string) (*model.User, error) {
 	var user model.User
 	if err := repo.db.First(&user, "uuid = ?", uuid).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, errors.New("not found")
+		}
+		return nil, errors.New("failed to get: " + err.Error())
+	}
+	return &user, nil
+}
+
+func (repo *UserRepo) GetByID(id uint) (*model.User, error) {
+	var user model.User
+	if err := repo.db.First(&user, "uuid = ?", id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errors.New("not found")
 		}

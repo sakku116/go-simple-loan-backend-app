@@ -16,6 +16,7 @@ func GenerateJwtToken(user *model.User, secretKey string, expMins int, tokenId *
 		"sub":      user.UUID,
 		"username": user.Username,
 		"email":    user.Email,
+		"role":     user.Role.String(),
 		"exp":      time.Now().Add(time.Minute * time.Duration(expMins)).Unix(),
 	}
 
