@@ -2,6 +2,7 @@ package dto
 
 import (
 	"backend/domain/enum"
+	validator_util "backend/utils/validator/user"
 	"time"
 )
 
@@ -21,6 +22,25 @@ type CreateUserReq struct {
 	Role     enum.UserRole `json:"role" binding:"required,oneof=admin user"`
 }
 
+func (req *CreateUserReq) Validate() error {
+	err := validator_util.ValidateUsername(req.Username)
+	if err != nil {
+		return err
+	}
+
+	err = validator_util.ValidateEmail(req.Email)
+	if err != nil {
+		return err
+	}
+
+	err = validator_util.ValidatePassword(req.Password)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 type CreateUserRespData struct {
 	UUID      string    `json:"uuid"`
 	Username  string    `json:"username"`
@@ -35,6 +55,31 @@ type UpdateUserReq struct {
 	Email    *string        `json:"email"`
 	Password *string        `json:"password"`
 	Role     *enum.UserRole `json:"role" binding:"oneof=admin user"`
+}
+
+func (req *UpdateUserReq) Validate() error {
+	if req.Username != nil {
+		err := validator_util.ValidateUsername(*req.Username)
+		if err != nil {
+			return err
+		}
+	}
+
+	if req.Email != nil {
+		err := validator_util.ValidateEmail(*req.Email)
+		if err != nil {
+			return err
+		}
+	}
+
+	if req.Password != nil {
+		err := validator_util.ValidatePassword(*req.Password)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 type UpdateUserRespData struct {

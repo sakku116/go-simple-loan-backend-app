@@ -6,7 +6,6 @@ import (
 	"backend/repository"
 	bcrypt_util "backend/utils/bcrypt"
 	error_utils "backend/utils/error"
-	validator_util "backend/utils/validator/user"
 	"context"
 	"fmt"
 
@@ -71,27 +70,8 @@ func (ucase *UserUcase) CreateUser(
 	payload dto.CreateUserReq,
 ) (*dto.CreateUserRespData, error) {
 	// validate input
-	err := validator_util.ValidateUsername(payload.Username)
+	err := payload.Validate()
 	if err != nil {
-		logger.Errorf("error validating username: %s", err.Error())
-		return nil, &error_utils.CustomErr{
-			HttpCode: 400,
-			Message:  err.Error(),
-		}
-	}
-
-	err = validator_util.ValidateEmail(payload.Email)
-	if err != nil {
-		logger.Errorf("error validating email: %s", err.Error())
-		return nil, &error_utils.CustomErr{
-			HttpCode: 400,
-			Message:  err.Error(),
-		}
-	}
-
-	err = validator_util.ValidatePassword(payload.Password)
-	if err != nil {
-		logger.Errorf("error validating password: %s", err.Error())
 		return nil, &error_utils.CustomErr{
 			HttpCode: 400,
 			Message:  err.Error(),
@@ -160,39 +140,11 @@ func (ucase *UserUcase) UpdateUser(
 	payload dto.UpdateUserReq,
 ) (*dto.UpdateUserRespData, error) {
 	// validate input
-	if payload.Username != nil {
-		err := validator_util.ValidateUsername(*payload.Username)
-		if err != nil {
-			logger.Errorf("error validating username: %s", err.Error())
-			return nil, &error_utils.CustomErr{
-				HttpCode: 400,
-
-				Message: err.Error(),
-			}
-		}
-	}
-
-	if payload.Email != nil {
-		err := validator_util.ValidateEmail(*payload.Email)
-		if err != nil {
-			logger.Errorf("error validating email: %s", err.Error())
-			return nil, &error_utils.CustomErr{
-				HttpCode: 400,
-
-				Message: err.Error(),
-			}
-		}
-	}
-
-	if payload.Password != nil {
-		err := validator_util.ValidatePassword(*payload.Password)
-		if err != nil {
-			logger.Errorf("error validating password: %s", err.Error())
-			return nil, &error_utils.CustomErr{
-				HttpCode: 400,
-
-				Message: err.Error(),
-			}
+	err := payload.Validate()
+	if err != nil {
+		return nil, &error_utils.CustomErr{
+			HttpCode: 400,
+			Message:  err.Error(),
 		}
 	}
 
