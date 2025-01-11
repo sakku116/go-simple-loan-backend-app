@@ -31,6 +31,7 @@ func SeedUser(userRepo repository.IUserRepo) error {
 			Birthplace:    "Jakarta",
 			Birthdate:     "11-12-2001",
 			CurrentSalary: 10000000,
+			CurrentLimit:  1000000,
 		})
 	} else {
 		logger.Warningf("initial admin username and password not set")
@@ -50,6 +51,7 @@ func SeedUser(userRepo repository.IUserRepo) error {
 			Birthplace:    "PATI",
 			Birthdate:     "11-12-2001",
 			CurrentSalary: 11000000,
+			CurrentLimit:  100000,
 		})
 	} else {
 		logger.Warningf("initial user username and password not set")

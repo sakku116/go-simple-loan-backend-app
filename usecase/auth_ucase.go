@@ -101,6 +101,12 @@ func (s *AuthUcase) Register(ctx *gin.Context, payload dto.RegisterUserReq) (*dt
 		Birthdate:     payload.Birthdate,
 		CurrentSalary: payload.CurrentSalary,
 	}
+
+	// perform current limit calculation here
+	if user.CurrentSalary > 0 {
+		user.CurrentLimit = user.CurrentSalary / 3
+	}
+
 	err = user.Validate()
 	if err != nil {
 		return nil, err
