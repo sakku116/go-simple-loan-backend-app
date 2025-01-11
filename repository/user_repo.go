@@ -1,8 +1,11 @@
 package repository
 
 import (
+	"backend/domain/dto"
 	"backend/domain/model"
 	"errors"
+	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -20,6 +23,9 @@ type IUserRepo interface {
 	GetByEmail(email string) (*model.User, error)
 	Update(user *model.User) (*model.User, error)
 	Delete(id string) error
+	GetList(
+		params dto.UserRepo_GetListParams,
+	) ([]model.User, int64, error)
 }
 
 func NewUserRepo(db *gorm.DB) IUserRepo {
@@ -103,4 +109,74 @@ func (repo *UserRepo) Delete(id string) error {
 		return errors.New("failed to delete: " + err.Error())
 	}
 	return nil
+}
+
+func (repo *UserRepo) GetList(
+	params dto.UserRepo_GetListParams,
+) ([]model.User, int64, error) {
+	var result []model.User
+	var totalData int64
+
+	// validate param
+	err := params.Validate()
+	if err != nil {
+		return result, totalData, err
+	}
+
+	tx := repo.db.Model(&result)
+
+	// filtering
+	if params.Query != nil && params.QueryBy != nil {
+		if params.QueryBy != nil {
+			if *params.QueryBy != "" {
+				tx = tx.Where("? LIKE ?", params.QueryBy, "%"+*params.Query+"%")
+			} else {
+				// filter by all queriable fields
+				conditions := ""
+				conditionValues := []interface{}{}
+				tmp := model.User{}
+				queriableFields := tmp.GetProps().QueriableFields
+				for _, field := range queriableFields {
+					if field == "" {
+						continue
+					}
+					conditions += fmt.Sprintf(
+						`%s LIKE ? OR `,
+						field,
+					)
+					conditionValues = append(conditionValues, "%"+*params.Query+"%")
+				}
+				conditions = strings.TrimSuffix(conditions, " OR")
+				tx = tx.Where(
+					conditions,
+					conditionValues...,
+				)
+			}
+		}
+	}
+
+	// get count if needed
+	if params.DoCount {
+		err = tx.Count(&totalData).Error
+		if err != nil {
+			return nil, totalData, errors.New("failed to count: " + err.Error())
+		}
+	}
+
+	// sorting
+	if params.SortOrder != nil && params.SortBy != nil {
+		tx = tx.Order(fmt.Sprintf("%s %s", *params.SortBy, *params.SortOrder))
+	}
+
+	// pagination
+	if params.Page != nil && params.Limit != nil {
+		tx = tx.Offset((*params.Page - 1) * *params.Limit)
+	}
+
+	err = tx.Find(&result).Error
+	if err != nil {
+		return nil, totalData, errors.New("failed to get: " + err.Error())
+	}
+
+	return result, totalData, nil
 }

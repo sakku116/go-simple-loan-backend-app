@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	dto "backend/domain/dto"
 	model "backend/domain/model"
 
 	mock "github.com/stretchr/testify/mock"
@@ -209,6 +210,43 @@ func (_m *IUserRepo) GetByUsername(username string) (*model.User, error) {
 	}
 
 	return r0, r1
+}
+
+// GetList provides a mock function with given fields: params
+func (_m *IUserRepo) GetList(params dto.UserRepo_GetListParams) ([]model.User, int64, error) {
+	ret := _m.Called(params)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetList")
+	}
+
+	var r0 []model.User
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(dto.UserRepo_GetListParams) ([]model.User, int64, error)); ok {
+		return rf(params)
+	}
+	if rf, ok := ret.Get(0).(func(dto.UserRepo_GetListParams) []model.User); ok {
+		r0 = rf(params)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.User)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(dto.UserRepo_GetListParams) int64); ok {
+		r1 = rf(params)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(dto.UserRepo_GetListParams) error); ok {
+		r2 = rf(params)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
 }
 
 // Update provides a mock function with given fields: user

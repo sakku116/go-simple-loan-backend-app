@@ -15,6 +15,7 @@ import (
 )
 
 func init() {
+	logger.Debugf("User: %v", helper.PrettyJson(model.User{}))
 	config.InitEnv("./.env")
 	config.ConfigureLogger()
 }
@@ -31,6 +32,7 @@ func main() {
 	logger.Debugf("Envs: %v", helper.PrettyJson(config.Envs))
 
 	gormDB := config.NewMySqlDB()
+	minioClient := config.NewMinioClient()
 
 	// migrations
 	err := gormDB.AutoMigrate(
@@ -46,10 +48,11 @@ func main() {
 	// repositories
 	userRepo := repository.NewUserRepo(gormDB)
 	refreshTokenRepo := repository.NewRefreshTokenRepo(gormDB)
+	fileRepo := repository.NewFileRepo(minioClient)
 
 	// ucases
 	authUcase := ucase.NewAuthUcase(userRepo, refreshTokenRepo)
-	userUcase := ucase.NewUserUcase(userRepo)
+	userUcase := ucase.NewUserUcase(userRepo, fileRepo)
 
 	dependencies := CommonDeps{
 		AuthUcase: authUcase,

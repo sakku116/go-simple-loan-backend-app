@@ -19,18 +19,16 @@ services:
     networks:
       - go_simple_loan_backend_network
 
-  go_simple_loan_backend_minio:
+  go-simple-loan-backend-minio:
     image: minio/minio:latest
-    container_name: go_simple_loan_backend_minio
+    container_name: go-simple-loan-backend-minio
     command: server /data --console-address ":9001"
     ports:
       - "9000:9000"
       - "9001:9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-root}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-12345678}
-      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-indomiegorengoriginal}
-      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-indomiegorengoriginal}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-root}
+      MINIO_ROOT_PASSWORD: ${MINIO_ACCESS_SECRET:-12345678}
     volumes:
       - go_simple_loan_backend_minio_data:/data
     healthcheck:
@@ -54,7 +52,7 @@ services:
     depends_on:
       go_simple_loan_backend_mysql:
         condition: service_healthy
-      go_simple_loan_backend_minio:
+      go-simple-loan-backend-minio:
         condition: service_healthy
     restart: unless-stopped
 

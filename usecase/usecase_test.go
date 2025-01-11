@@ -8,6 +8,7 @@ import (
 var (
 	MockedUserRepo         *mocks.IUserRepo
 	MockedRefreshTokenRepo *mocks.IRefreshTokenRepo
+	MockedFileRepo         *mocks.IFileRepo
 	TestAuthUcase          IAuthUcase
 	TestUserUcase          IUserUcase
 )
@@ -22,5 +23,5 @@ func SetupTest() {
 
 	// usecases
 	TestAuthUcase = NewAuthUcase(MockedUserRepo, MockedRefreshTokenRepo)
-	TestUserUcase = NewUserUcase(MockedUserRepo)
+	TestUserUcase = NewUserUcase(MockedUserRepo, MockedFileRepo)
 }

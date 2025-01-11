@@ -6,8 +6,10 @@ import (
 	"backend/repository"
 	bcrypt_util "backend/utils/bcrypt"
 	error_utils "backend/utils/error"
+	"backend/utils/helper"
 	"context"
 	"fmt"
+	"mime/multipart"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -15,6 +17,7 @@ import (
 
 type UserUcase struct {
 	userRepo repository.IUserRepo
+	fileRepo repository.IFileRepo
 }
 
 type IUserUcase interface {
@@ -35,10 +38,18 @@ type IUserUcase interface {
 		ginCtx *gin.Context,
 		userUUID string,
 	) (*dto.DeleteUserRespData, error)
+	UploadKtpPhoto(ctx context.Context, userUUID string, file *multipart.FileHeader) (*dto.UploadKtpPhotoRespData, error)
+	UploadFacePhoto(ctx context.Context, userUUID string, file *multipart.FileHeader) (*dto.UploadFacePhotoRespData, error)
 }
 
-func NewUserUcase(userRepo repository.IUserRepo) IUserUcase {
-	return &UserUcase{userRepo: userRepo}
+func NewUserUcase(
+	userRepo repository.IUserRepo,
+	fileRepo repository.IFileRepo,
+) IUserUcase {
+	return &UserUcase{
+		userRepo: userRepo,
+		fileRepo: fileRepo,
+	}
 }
 
 func (ucase *UserUcase) GetByUUID(ctx context.Context, ginCtx *gin.Context, userUUID string) (*dto.GetUserByUUIDResp, error) {
@@ -240,5 +251,105 @@ func (ucase *UserUcase) DeleteUser(
 		Role:      user.Role.String(),
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
+	}, nil
+}
+
+func (u *UserUcase) UploadKtpPhoto(ctx context.Context, userUUID string, file *multipart.FileHeader) (*dto.UploadKtpPhotoRespData, error) {
+	// find user
+	user, err := u.userRepo.GetByUUID(userUUID)
+	if err != nil {
+		logger.Debugf("failed to get user: %v", err)
+		if err.Error() == "not found" {
+			return nil, &error_utils.CustomErr{
+				HttpCode: 404,
+				Message:  "user not found",
+				Detail:   err.Error(),
+			}
+		}
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	// upload file
+	tmp := model.User{}
+	filename := fmt.Sprintf("%s-%s", uuid.New().String(), file.Filename)
+	filename, err = u.fileRepo.Upload(ctx, file, filename, tmp.GetProps().MinioBucketName)
+	if err != nil {
+		logger.Debugf("failed to upload KTP photo: %v", err)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	// update user
+	user.KtpPhoto = &filename
+	user.UpdatedAt = helper.TimeNowUTC()
+	user, err = u.userRepo.Update(user)
+	if err != nil {
+		logger.Debugf("failed to update user: %v", err)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	return &dto.UploadKtpPhotoRespData{
+		KtpPhoto: filename,
+	}, nil
+}
+
+func (u *UserUcase) UploadFacePhoto(ctx context.Context, userUUID string, file *multipart.FileHeader) (*dto.UploadFacePhotoRespData, error) {
+	// find user
+	user, err := u.userRepo.GetByUUID(userUUID)
+	if err != nil {
+		logger.Debugf("failed to get user: %v", err)
+		if err.Error() == "not found" {
+			return nil, &error_utils.CustomErr{
+				HttpCode: 404,
+				Message:  "user not found",
+				Detail:   err.Error(),
+			}
+		}
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	// upload file
+	tmp := model.User{}
+	filename := fmt.Sprintf("%s-%s", uuid.New().String(), file.Filename)
+	filename, err = u.fileRepo.Upload(ctx, file, filename, tmp.GetProps().MinioBucketName)
+	if err != nil {
+		logger.Debugf("failed to upload KTP photo: %v", err)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	// update user
+	user.KtpPhoto = &filename
+	user.UpdatedAt = helper.TimeNowUTC()
+	user, err = u.userRepo.Update(user)
+	if err != nil {
+		logger.Debugf("failed to update user: %v", err)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	return &dto.UploadFacePhotoRespData{
+		FacePhoto: filename,
 	}, nil
 }

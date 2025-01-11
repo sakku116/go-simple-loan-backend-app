@@ -3,7 +3,10 @@ package dto
 import (
 	"backend/domain/enum"
 	"backend/domain/model"
+	"backend/utils/helper"
 	validator_util "backend/utils/validator/user"
+	"fmt"
+	"mime/multipart"
 	"time"
 )
 
@@ -107,4 +110,60 @@ type DeleteUserRespData struct {
 	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UploadKtpPhotoReq struct {
+	File *multipart.FileHeader `form:"file" binding:"required"`
+}
+
+type UploadKtpPhotoRespData struct {
+	KtpPhoto string `json:"ktp_photo"`
+}
+
+type UploadFacePhotoReq struct {
+	File *multipart.FileHeader `form:"file" binding:"required"`
+}
+
+type UploadFacePhotoRespData struct {
+	FacePhoto string `json:"face_photo"`
+}
+
+type UserRepo_GetListParams struct {
+	Query     *string
+	QueryBy   *string // use empty string to query by all
+	Page      *int
+	Limit     *int
+	SortOrder *enum.SortOrder
+	SortBy    *string
+	DoCount   bool
+}
+
+func (params *UserRepo_GetListParams) Validate() error {
+	tmp := model.User{}
+	if params.QueryBy != nil {
+		queriableFields := tmp.GetProps().QueriableFields
+		// add empty string to query by all queriable fields
+		queriableFields = append(queriableFields, "")
+		if !helper.ArrayContains(queriableFields, *params.QueryBy) {
+			return fmt.Errorf("invalid query_by")
+		}
+	}
+
+	if params.SortBy != nil {
+		sortableFields := tmp.GetProps().SortableFields
+		if !helper.ArrayContains(sortableFields, *params.QueryBy) {
+			return fmt.Errorf("invalid sort_by")
+		}
+	}
+
+	return nil
+}
+
+type GetUserListReq struct {
+	Query     *string         `form:"query"`
+	QueryBy   *string         `form:"query_by" binding:"oneof=username email nik fullname legalname"`
+	Page      *int            `form:"page"`
+	Limit     *int            `form:"limit"`
+	SortOrder *enum.SortOrder `form:"sort_order"`
+	SortBy    *string         `form:"sort_by"`
 }
