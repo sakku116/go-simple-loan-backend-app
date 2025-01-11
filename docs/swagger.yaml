@@ -26,16 +26,138 @@ definitions:
       uuid:
         type: string
     type: object
-  dto.LoginDevReq:
+  dto.CreateUserReq:
     properties:
+      birthdate:
+        description: DD-MM-YYYY
+        type: string
+      birthplace:
+        type: string
+      current_salary:
+        type: integer
+      email:
+        type: string
+      fullname:
+        type: string
+      legalname:
+        type: string
+      nik:
+        type: string
       password:
         type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/enum.UserRole'
+        enum:
+        - admin
+        - user
       username:
-        description: username or email, but swagger oauth2password need username field
         type: string
     required:
+    - birthdate
+    - birthplace
+    - current_salary
+    - email
+    - fullname
+    - legalname
+    - nik
     - password
+    - role
     - username
+    type: object
+  dto.CreateUserRespData:
+    properties:
+      birthdate:
+        type: string
+      birthplace:
+        type: string
+      current_salary:
+        type: integer
+      email:
+        type: string
+      face_photo:
+        type: string
+      fullname:
+        type: string
+      ktp_photo:
+        type: string
+      legalname:
+        type: string
+      nik:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+      uuid:
+        type: string
+    type: object
+  dto.DeleteUserRespData:
+    properties:
+      birthdate:
+        type: string
+      birthplace:
+        type: string
+      current_salary:
+        type: integer
+      email:
+        type: string
+      face_photo:
+        type: string
+      fullname:
+        type: string
+      ktp_photo:
+        type: string
+      legalname:
+        type: string
+      nik:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+      uuid:
+        type: string
+    type: object
+  dto.GetUserByUUIDResp:
+    properties:
+      birthdate:
+        type: string
+      birthplace:
+        type: string
+      current_salary:
+        type: integer
+      email:
+        type: string
+      face_photo:
+        type: string
+      fullname:
+        type: string
+      ktp_photo:
+        type: string
+      legalname:
+        type: string
+      nik:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+      uuid:
+        type: string
+    type: object
+  dto.GetUserListRespData:
+    properties:
+      current_page:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.BaseUserResponse'
+        type: array
+      total:
+        type: integer
+      total_page:
+        type: integer
     type: object
   dto.LoginDevResp:
     properties:
@@ -118,6 +240,110 @@ definitions:
       refresh_token:
         type: string
     type: object
+  dto.UpdateUserReq:
+    properties:
+      birthdate:
+        description: DD-MM-YYYY
+        type: string
+      birthplace:
+        type: string
+      current_salary:
+        type: integer
+      email:
+        type: string
+      fullname:
+        type: string
+      legalname:
+        type: string
+      nik:
+        type: string
+      password:
+        type: string
+      role:
+        $ref: '#/definitions/enum.UserRole'
+      username:
+        type: string
+    type: object
+  dto.UpdateUserRespData:
+    properties:
+      birthdate:
+        type: string
+      birthplace:
+        type: string
+      current_salary:
+        type: integer
+      email:
+        type: string
+      face_photo:
+        type: string
+      fullname:
+        type: string
+      ktp_photo:
+        type: string
+      legalname:
+        type: string
+      nik:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+      uuid:
+        type: string
+    type: object
+  dto.UploadFacePhotoRespData:
+    properties:
+      face_photo:
+        type: string
+    type: object
+  dto.UploadKtpPhotoRespData:
+    properties:
+      ktp_photo:
+        type: string
+    type: object
+  enum.SortOrder:
+    enum:
+    - asc
+    - desc
+    type: string
+    x-enum-varnames:
+    - SortOrder_asc
+    - SortOrder_desc
+  enum.UserRole:
+    enum:
+    - user
+    - admin
+    type: string
+    x-enum-varnames:
+    - UserRole_User
+    - UserRole_Admin
+  model.BaseUserResponse:
+    properties:
+      birthdate:
+        type: string
+      birthplace:
+        type: string
+      current_salary:
+        type: integer
+      email:
+        type: string
+      face_photo:
+        type: string
+      fullname:
+        type: string
+      ktp_photo:
+        type: string
+      legalname:
+        type: string
+      nik:
+        type: string
+      role:
+        type: string
+      username:
+        type: string
+      uuid:
+        type: string
+    type: object
 info:
   contact: {}
   title: Loan Backend API
@@ -167,27 +393,28 @@ paths:
       - Auth
   /auth/login/dev:
     post:
+      consumes:
+      - multipart/form-data
       parameters:
-      - description: payload
-        in: body
-        name: payload
+      - description: username
+        in: formData
+        name: username
         required: true
-        schema:
-          $ref: '#/definitions/dto.LoginDevReq'
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
       responses:
         "200":
           description: OK
           schema:
             allOf:
-            - $ref: '#/definitions/dto.BaseJSONResp'
+            - $ref: '#/definitions/dto.LoginDevResp'
             - properties:
                 data:
-                  allOf:
-                  - $ref: '#/definitions/dto.LoginDevResp'
-                  - properties:
-                      data:
-                        $ref: '#/definitions/dto.LoginRespData'
-                    type: object
+                  $ref: '#/definitions/dto.LoginRespData'
               type: object
       summary: login dev
       tags:
@@ -235,6 +462,287 @@ paths:
       summary: register new user
       tags:
       - Auth
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get user list
+      parameters:
+      - default: 10
+        in: query
+        name: limit
+        type: integer
+      - default: 1
+        in: query
+        name: page
+        type: integer
+      - in: query
+        name: query
+        type: string
+      - description: leave empty
+        enum:
+        - username
+        - email
+        - nik
+        - fullname
+        - legalname
+        - role
+        in: query
+        name: query_by
+        type: string
+      - default: updated_at
+        enum:
+        - updated_at
+        - username
+        - email
+        - nik
+        - fullname
+        - legalname
+        - role
+        in: query
+        name: sort_by
+        type: string
+      - default: desc
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+        x-enum-varnames:
+        - SortOrder_asc
+        - SortOrder_desc
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetUserListRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Get user list
+      tags:
+      - User
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User create request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CreateUserRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Create user (admin only)
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: User update request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UpdateUserRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Update user (current user)
+      tags:
+      - User
+  /users/{uuid}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: User UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.DeleteUserRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Delete user by UUID (admin only)
+      tags:
+      - User
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: User UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetUserByUUIDResp'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Get user by UUID
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: User UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: User update request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UpdateUserRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Update user by UUID (admin only)
+      tags:
+      - User
+  /users/face-photo:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Face photo file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UploadFacePhotoRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Upload my Face photo (current user)
+      tags:
+      - User
+  /users/ktp-photo:
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: KTP photo file
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UploadKtpPhotoRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Upload my KTP photo (current user)
+      tags:
+      - User
+  /users/me:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetUserByUUIDResp'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Get user (current user)
+      tags:
+      - User
 securityDefinitions:
   OAuth2Password:
     description: JWT Authorization header using the Bearer scheme (add 'Bearer ' prefix).

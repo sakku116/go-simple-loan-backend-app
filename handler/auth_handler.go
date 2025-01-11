@@ -14,9 +14,14 @@ type AuthHandler struct {
 }
 
 type IAuthHandler interface {
+	Register(ctx *gin.Context)
+	LoginDev(ctx *gin.Context)
+	Login(ctx *gin.Context)
+	RefreshToken(ctx *gin.Context)
+	CheckToken(ctx *gin.Context)
 }
 
-func NewAuthHandler(respWriter http_response.IHttpResponseWriter, authUcase ucase.IAuthUcase) AuthHandler {
+func NewAuthHandler(respWriter http_response.IHttpResponseWriter, authUcase ucase.IAuthUcase) IAuthHandler {
 	return AuthHandler{
 		respWriter: respWriter,
 		authUcase:  authUcase,
@@ -29,7 +34,7 @@ func NewAuthHandler(respWriter http_response.IHttpResponseWriter, authUcase ucas
 // @Success 200 {object} dto.BaseJSONResp{data=dto.RegisterUserRespData}
 // @Router /auth/register [post]
 // @param payload  body  dto.RegisterUserReq  true "payload"
-func (h *AuthHandler) Register(ctx *gin.Context) {
+func (h AuthHandler) Register(ctx *gin.Context) {
 	var payload dto.RegisterUserReq
 	err := ctx.ShouldBindJSON(&payload)
 	if err != nil {
@@ -49,10 +54,12 @@ func (h *AuthHandler) Register(ctx *gin.Context) {
 // Login Dev
 // @Summary login dev
 // @Tags Auth
-// @Success 200 {object} dto.BaseJSONResp{data=dto.LoginDevResp{data=dto.LoginRespData}}
+// @Accept multipart/form-data
+// @Success 200 {object} dto.LoginDevResp{data=dto.LoginRespData}
 // @Router /auth/login/dev [post]
-// @param payload  body  dto.LoginDevReq  true "payload"
-func (h *AuthHandler) LoginDev(ctx *gin.Context) {
+// @param username formData string true "username"
+// @param password formData string true "password"
+func (h AuthHandler) LoginDev(ctx *gin.Context) {
 	var payload dto.LoginDevReq
 	err := ctx.ShouldBind(&payload)
 	if err != nil {
@@ -87,7 +94,7 @@ func (h *AuthHandler) LoginDev(ctx *gin.Context) {
 // @Success 200 {object} dto.BaseJSONResp{data=dto.LoginRespData}
 // @Router /auth/login [post]
 // @param payload  body  dto.LoginReq  true "payload"
-func (h *AuthHandler) Login(ctx *gin.Context) {
+func (h AuthHandler) Login(ctx *gin.Context) {
 	var payload dto.LoginReq
 	err := ctx.ShouldBindJSON(&payload)
 	if err != nil {
@@ -109,7 +116,7 @@ func (h *AuthHandler) Login(ctx *gin.Context) {
 // @Router /auth/refresh-token [post]
 // @param payload  body  dto.RefreshTokenReq  true "payload"
 // @Success 200 {object} dto.BaseJSONResp{data=dto.RefreshTokenRespData}
-func (h *AuthHandler) RefreshToken(ctx *gin.Context) {
+func (h AuthHandler) RefreshToken(ctx *gin.Context) {
 	var payload dto.RefreshTokenReq
 	err := ctx.ShouldBindJSON(&payload)
 	if err != nil {

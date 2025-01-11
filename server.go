@@ -3,6 +3,7 @@ package main
 import (
 	"backend/domain/dto"
 	"backend/handler"
+	"backend/middleware"
 	"backend/utils/http_response"
 
 	_ "backend/docs"
@@ -17,7 +18,7 @@ func SetupServer(ginEngine *gin.Engine, deps CommonDeps) {
 
 	// handlers
 	authHandler := handler.NewAuthHandler(responseWriter, deps.AuthUcase)
-	_ = authHandler
+	userHandler := handler.NewUserHandler(responseWriter, deps.UserUcase)
 
 	// register routes
 	router := ginEngine
@@ -27,11 +28,33 @@ func SetupServer(ginEngine *gin.Engine, deps CommonDeps) {
 			Message: "pong",
 		})
 	})
-	router.POST("/auth/register", authHandler.Register)
-	router.POST("/auth/login/dev", authHandler.LoginDev)
-	router.POST("/auth/login", authHandler.Login)
-	router.POST("/auth/check-token", authHandler.CheckToken)
-	router.POST("/auth/refresh-token", authHandler.RefreshToken)
+	authRouter := router.Group("/auth")
+	{
+		authRouter.POST("/register", authHandler.Register)
+		authRouter.POST("/login/dev", authHandler.LoginDev)
+		authRouter.POST("/login", authHandler.Login)
+		authRouter.POST("/check-token", authHandler.CheckToken)
+		authRouter.POST("/refresh-token", authHandler.RefreshToken)
+	}
+
+	authMiddleware := middleware.AuthMiddleware(responseWriter)
+	adminOnlyMiddleware := middleware.AuthAdminOnlyMiddleware(responseWriter)
+	securedRouter := router.Group("/")
+	securedRouter.Use(authMiddleware)
+	{
+		userRouter := securedRouter.Group("/users")
+		{
+			userRouter.GET("", userHandler.GetUserList)
+			userRouter.GET("/me", userHandler.GetMe)
+			userRouter.GET("/:uuid", userHandler.GetByUUID)
+			userRouter.POST("", adminOnlyMiddleware, userHandler.CreateUser)
+			userRouter.PUT("", userHandler.UpdateUserMe)
+			userRouter.PUT("/:uuid", adminOnlyMiddleware, userHandler.UpdateUser)
+			userRouter.DELETE("/:uuid", adminOnlyMiddleware, userHandler.DeleteUser)
+			userRouter.POST("/ktp-photo", userHandler.UploadKtpPhoto)
+			userRouter.POST("/face-photo", userHandler.UploadFacePhoto)
+		}
+	}
 
 	// swagger
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

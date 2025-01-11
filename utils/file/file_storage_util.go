@@ -1,31 +1,33 @@
-package repository
+package file_storage_util
 
 import (
 	"backend/utils/helper"
 	"context"
 	"fmt"
 	"mime/multipart"
+	"net/url"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 )
 
-type FileRepo struct {
+type FileStorageUtil struct {
 	client *minio.Client
 }
 
-type IFileRepo interface {
+type IFileStorageUtil interface {
 	Upload(ctx context.Context, file *multipart.FileHeader, filename string, bucketname string) (string, error)
 	GetUrl(ctx context.Context, filename string, bucketname string, download bool) (string, error)
 	Delete(ctx context.Context, filename string, bucketname string) error
 }
 
-func NewFileRepo(client *minio.Client) IFileRepo {
-	return &FileRepo{
+func NewFileStorageUtil(client *minio.Client) IFileStorageUtil {
+	return &FileStorageUtil{
 		client: client,
 	}
 }
 
-func (r *FileRepo) Upload(ctx context.Context, file *multipart.FileHeader, filename string, bucketname string) (string, error) {
+func (r *FileStorageUtil) Upload(ctx context.Context, file *multipart.FileHeader, filename string, bucketname string) (string, error) {
 	fileContent, err := file.Open()
 	if err != nil {
 		return "", fmt.Errorf("failed to open file: %w", err)
@@ -42,15 +44,24 @@ func (r *FileRepo) Upload(ctx context.Context, file *multipart.FileHeader, filen
 	return filename, nil
 }
 
-func (r *FileRepo) GetUrl(ctx context.Context, filename string, bucketname string, download bool) (string, error) {
-	presignedUrl, err := r.client.PresignedGetObject(ctx, bucketname, filename, 60*60, nil)
+func (r *FileStorageUtil) GetUrl(ctx context.Context, filename string, bucketname string, download bool) (string, error) {
+	reqParams := url.Values{
+		"response-content-type": []string{helper.GetMimeType(filename)},
+	}
+	if download {
+		reqParams.Set("response-content-disposition", fmt.Sprintf("attachment; filename=\"%s\"", filename))
+	} else {
+		reqParams.Set("response-content-disposition", fmt.Sprintf("inline; filename=\"%s\"", filename))
+	}
+
+	presignedUrl, err := r.client.PresignedGetObject(ctx, bucketname, filename, time.Minute, reqParams)
 	if err != nil {
 		return "", fmt.Errorf("failed to get url: %w", err)
 	}
 	return presignedUrl.String(), nil
 }
 
-func (r *FileRepo) Delete(ctx context.Context, filename string, bucketname string) error {
+func (r *FileStorageUtil) Delete(ctx context.Context, filename string, bucketname string) error {
 	err := r.client.RemoveObject(ctx, bucketname, filename, minio.RemoveObjectOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to delete file: %w", err)

@@ -5,7 +5,9 @@ import (
 	"backend/domain/model"
 	"backend/repository"
 	ucase "backend/usecase"
+	file_storage_util "backend/utils/file"
 	"backend/utils/helper"
+	minio_util "backend/utils/minio"
 	seeder_util "backend/utils/seeder/user"
 	"fmt"
 	"os"
@@ -45,14 +47,19 @@ func main() {
 		logger.Fatalf("failed to migrate database: %v", err)
 	}
 
+	// ensure buckets
+	err = minio_util.EnsureBucketsFromModels(minioClient, &model.User{})
+
 	// repositories
 	userRepo := repository.NewUserRepo(gormDB)
 	refreshTokenRepo := repository.NewRefreshTokenRepo(gormDB)
-	fileRepo := repository.NewFileRepo(minioClient)
+
+	// utils
+	fileStorageUtil := file_storage_util.NewFileStorageUtil(minioClient)
 
 	// ucases
 	authUcase := ucase.NewAuthUcase(userRepo, refreshTokenRepo)
-	userUcase := ucase.NewUserUcase(userRepo, fileRepo)
+	userUcase := ucase.NewUserUcase(userRepo, fileStorageUtil)
 
 	dependencies := CommonDeps{
 		AuthUcase: authUcase,

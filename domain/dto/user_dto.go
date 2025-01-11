@@ -3,20 +3,14 @@ package dto
 import (
 	"backend/domain/enum"
 	"backend/domain/model"
-	"backend/utils/helper"
 	validator_util "backend/utils/validator/user"
+	"errors"
 	"fmt"
 	"mime/multipart"
-	"time"
 )
 
 type GetUserByUUIDResp struct {
-	UUID      string    `json:"uuid"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Role      string    `json:"role"`
+	model.BaseUserResponse
 }
 
 type CreateUserReq struct {
@@ -54,19 +48,20 @@ func (req *CreateUserReq) Validate() error {
 }
 
 type CreateUserRespData struct {
-	UUID      string    `json:"uuid"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	model.BaseUserResponse
 }
 
 type UpdateUserReq struct {
-	Username *string        `json:"username"`
-	Email    *string        `json:"email"`
-	Password *string        `json:"password"`
-	Role     *enum.UserRole `json:"role" binding:"oneof=admin user"`
+	Username      *string        `json:"username"`
+	Email         *string        `json:"email"`
+	Password      *string        `json:"password"`
+	Role          *enum.UserRole `json:"role"`
+	Fullname      *string        `json:"fullname"`
+	Legalname     *string        `json:"legalname"`
+	NIK           *string        `json:"nik"`
+	Birthplace    *string        `json:"birthplace"`
+	Birthdate     *string        `json:"birthdate"` // DD-MM-YYYY
+	CurrentSalary *int64         `json:"current_salary"`
 }
 
 func (req *UpdateUserReq) Validate() error {
@@ -91,25 +86,57 @@ func (req *UpdateUserReq) Validate() error {
 		}
 	}
 
+	if req.Role != nil {
+		isValid := (*req.Role).IsValid()
+		if !isValid {
+			return errors.New("user validation error: invalid role")
+		}
+	}
+
+	if req.Fullname != nil {
+		err := validator_util.ValidateFullname(*req.Fullname)
+		if err != nil {
+			return err
+		}
+	}
+
+	if req.Legalname != nil {
+		err := validator_util.ValidateLegalname(*req.Legalname)
+		if err != nil {
+			return err
+		}
+	}
+
+	if req.NIK != nil {
+		err := validator_util.ValidateNIK(*req.NIK)
+		if err != nil {
+			return err
+		}
+	}
+
+	if req.Birthplace != nil {
+		err := validator_util.ValidateBirthplace(*req.Birthplace)
+		if err != nil {
+			return err
+		}
+	}
+
+	if req.Birthdate != nil {
+		err := validator_util.ValidateBirthdate(*req.Birthdate)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 type UpdateUserRespData struct {
-	UUID      string    `json:"uuid"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	model.BaseUserResponse
 }
 
 type DeleteUserRespData struct {
-	UUID      string    `json:"uuid"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	Role      string    `json:"role"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	model.BaseUserResponse
 }
 
 type UploadKtpPhotoReq struct {
@@ -130,7 +157,7 @@ type UploadFacePhotoRespData struct {
 
 type UserRepo_GetListParams struct {
 	Query     *string
-	QueryBy   *string // use empty string to query by all
+	QueryBy   *string // leave empty to query by all
 	Page      *int
 	Limit     *int
 	SortOrder *enum.SortOrder
@@ -142,16 +169,28 @@ func (params *UserRepo_GetListParams) Validate() error {
 	tmp := model.User{}
 	if params.QueryBy != nil {
 		queriableFields := tmp.GetProps().QueriableFields
-		// add empty string to query by all queriable fields
-		queriableFields = append(queriableFields, "")
-		if !helper.ArrayContains(queriableFields, *params.QueryBy) {
+		contain := false
+		for _, field := range queriableFields {
+			if *params.QueryBy == field {
+				contain = true
+				break
+			}
+		}
+		if !contain {
 			return fmt.Errorf("invalid query_by")
 		}
 	}
 
 	if params.SortBy != nil {
 		sortableFields := tmp.GetProps().SortableFields
-		if !helper.ArrayContains(sortableFields, *params.QueryBy) {
+		contain := false
+		for _, field := range sortableFields {
+			if *params.SortBy == field {
+				contain = true
+				break
+			}
+		}
+		if !contain {
 			return fmt.Errorf("invalid sort_by")
 		}
 	}
@@ -160,10 +199,15 @@ func (params *UserRepo_GetListParams) Validate() error {
 }
 
 type GetUserListReq struct {
-	Query     *string         `form:"query"`
-	QueryBy   *string         `form:"query_by" binding:"oneof=username email nik fullname legalname"`
-	Page      *int            `form:"page"`
-	Limit     *int            `form:"limit"`
-	SortOrder *enum.SortOrder `form:"sort_order"`
-	SortBy    *string         `form:"sort_by"`
+	Query     *string         `form:"query" binding:"omitempty"`
+	QueryBy   *string         `form:"query_by" binding:"omitempty,oneof=username email nik fullname legalname role"` // leave empty
+	Page      int             `form:"page" default:"1"`
+	Limit     int             `form:"limit" default:"10"`
+	SortOrder *enum.SortOrder `form:"sort_order" binding:"omitempty,oneof=asc desc" default:"desc"`
+	SortBy    *string         `form:"sort_by" binding:"oneof=updated_at username email nik fullname legalname role" default:"updated_at"`
+}
+
+type GetUserListRespData struct {
+	BasePaginationRespData
+	Data []model.BaseUserResponse `json:"data"`
 }

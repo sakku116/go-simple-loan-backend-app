@@ -126,32 +126,33 @@ func (repo *UserRepo) GetList(
 	tx := repo.db.Model(&result)
 
 	// filtering
-	if params.Query != nil && params.QueryBy != nil {
+	if params.Query != nil {
 		if params.QueryBy != nil {
-			if *params.QueryBy != "" {
-				tx = tx.Where("? LIKE ?", params.QueryBy, "%"+*params.Query+"%")
-			} else {
-				// filter by all queriable fields
-				conditions := ""
-				conditionValues := []interface{}{}
-				tmp := model.User{}
-				queriableFields := tmp.GetProps().QueriableFields
-				for _, field := range queriableFields {
-					if field == "" {
-						continue
-					}
-					conditions += fmt.Sprintf(
-						`%s LIKE ? OR `,
-						field,
-					)
-					conditionValues = append(conditionValues, "%"+*params.Query+"%")
+			tx = tx.Where(fmt.Sprintf("%s LIKE ?", *params.QueryBy), "%"+*params.Query+"%")
+		} else {
+			// filter by all queriable fields
+			conditions := ""
+			conditionValues := []interface{}{}
+			tmp := model.User{}
+			queriableFields := tmp.GetProps().QueriableFields
+			for _, field := range queriableFields {
+				logger.Debugf("field: %s", field)
+				if field == "" {
+					logger.Debugf("skipping empty field")
+					continue
 				}
-				conditions = strings.TrimSuffix(conditions, " OR")
-				tx = tx.Where(
-					conditions,
-					conditionValues...,
+				conditions += fmt.Sprintf(
+					`%s LIKE ? OR `,
+					field,
 				)
+				conditionValues = append(conditionValues, "%"+*params.Query+"%")
 			}
+			logger.Debugf("conditionValues: %v", conditionValues)
+			conditions = strings.TrimSuffix(conditions, " OR ")
+			tx = tx.Where(
+				conditions,
+				conditionValues...,
+			)
 		}
 	}
 
@@ -170,7 +171,7 @@ func (repo *UserRepo) GetList(
 
 	// pagination
 	if params.Page != nil && params.Limit != nil {
-		tx = tx.Offset((*params.Page - 1) * *params.Limit)
+		tx = tx.Offset((*params.Page - 1) * *params.Limit).Limit(*params.Limit)
 	}
 
 	err = tx.Find(&result).Error

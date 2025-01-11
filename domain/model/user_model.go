@@ -2,30 +2,28 @@ package model
 
 import (
 	"backend/domain/enum"
+	file_storage_util "backend/utils/file"
 	"backend/utils/helper"
 	validator_util "backend/utils/validator/user"
+	"context"
 	"errors"
-	"time"
 
 	"gorm.io/gorm"
 )
 
 type User struct {
-	ID            uint           `gorm:"primarykey" json:"id"`
-	CreatedAt     time.Time      `json:"created_at"`
-	UpdatedAt     time.Time      `json:"updated_at"`
-	DeletedAt     gorm.DeletedAt `gorm:"index" json:"deleted_at"`
-	UUID          string         `gorm:"type:varchar(36);unique;not null" json:"uuid"`
-	Username      string         `gorm:"type:varchar(255);unique;not null" json:"username"`
-	Password      string         `gorm:"type:varchar(255);not null" json:"-"`
-	Email         string         `gorm:"type:varchar(255);email not null" json:"email"`
-	Role          enum.UserRole  `gorm:"type:varchar(255);not null" json:"role"`
-	Fullname      string         `gorm:"type:varchar(255);not null" json:"fullname"`
-	Legalname     string         `gorm:"type:varchar(255);not null" json:"legalname"`
-	NIK           string         `gorm:"type:varchar(255);not null" json:"nik"`
-	Birthplace    string         `gorm:"type:varchar(255);not null" json:"birthplace"`
-	Birthdate     string         `gorm:"type:varchar(255);not null" json:"birthdate"` // DD-MM-YYYY
-	CurrentSalary int64          `gorm:"type:bigint;not null" json:"current_salary"`
+	gorm.Model
+	UUID          string        `gorm:"type:varchar(36);unique;not null" json:"uuid"`
+	Username      string        `gorm:"type:varchar(255);unique;not null" json:"username"`
+	Password      string        `gorm:"type:varchar(255);not null" json:"-"`
+	Email         string        `gorm:"type:varchar(255);email not null" json:"email"`
+	Role          enum.UserRole `gorm:"type:varchar(255);not null" json:"role"`
+	Fullname      string        `gorm:"type:varchar(255);not null" json:"fullname"`
+	Legalname     string        `gorm:"type:varchar(255);not null" json:"legalname"`
+	NIK           string        `gorm:"type:varchar(255);not null" json:"nik"`
+	Birthplace    string        `gorm:"type:varchar(255);not null" json:"birthplace"`
+	Birthdate     string        `gorm:"type:varchar(255);not null" json:"birthdate"` // DD-MM-YYYY
+	CurrentSalary int64         `gorm:"type:bigint;not null" json:"current_salary"`
 
 	// these are required for requesting for loan
 	KtpPhoto  *string `gorm:"type:varchar(255);null" json:"ktp_photo"`
@@ -34,13 +32,65 @@ type User struct {
 	RefreshTokens []RefreshToken `gorm:"foreignKey:UserID;references:ID;" json:"-"`
 }
 
+type BaseUserResponse struct {
+	UUID          string  `json:"uuid"`
+	Username      string  `json:"username"`
+	Email         string  `json:"email"`
+	Role          string  `json:"role"`
+	Fullname      string  `json:"fullname"`
+	Legalname     string  `json:"legalname"`
+	NIK           string  `json:"nik"`
+	Birthplace    string  `json:"birthplace"`
+	Birthdate     string  `json:"birthdate"`
+	CurrentSalary int64   `json:"current_salary"`
+	KtpPhoto      *string `json:"ktp_photo"`
+	FacePhoto     *string `json:"face_photo"`
+}
+
+func (u *User) ToBaseResponse(ctx context.Context, fileStorageUtil file_storage_util.IFileStorageUtil) BaseUserResponse {
+	logger.Debugf(helper.PrettyJson(u))
+	bucketName := u.GetProps().BucketName
+	// urlize file fields
+	if u.KtpPhoto != nil {
+		tmp, _ := fileStorageUtil.GetUrl(ctx, *u.KtpPhoto, bucketName, false)
+		if tmp != "" {
+			u.KtpPhoto = &tmp
+		}
+	}
+	if u.FacePhoto != nil {
+		tmp, _ := fileStorageUtil.GetUrl(ctx, *u.FacePhoto, bucketName, false)
+		if tmp != "" {
+			u.FacePhoto = &tmp
+		}
+	}
+	return BaseUserResponse{
+		UUID:          u.UUID,
+		Username:      u.Username,
+		Email:         u.Email,
+		Role:          u.Role.String(),
+		Fullname:      u.Fullname,
+		Legalname:     u.Legalname,
+		NIK:           u.NIK,
+		Birthplace:    u.Birthplace,
+		Birthdate:     u.Birthdate,
+		CurrentSalary: u.CurrentSalary,
+		KtpPhoto:      u.KtpPhoto,
+		FacePhoto:     u.FacePhoto,
+	}
+}
+
 func (u *User) GetProps() ModelProps {
 	return ModelProps{
-		MinioBucketName: "users",
-		QueriableFields: helper.GetStructAttributesJson(u, []string{ // exclude by field names
-			"ID", "UUID", "CreatedAt", "UpdatedAt", "DeletedAt",
-			"Password", "KtpPhoto", "FacePhoto", "RefreshTokens",
-		}, nil),
+		BucketName: "users",
+		QueriableFields: helper.GetStructAttributesJson(u,
+			[]string{ // exclude by field names
+				"ID", "UUID", "CreatedAt", "UpdatedAt", "DeletedAt",
+				"Password", "KtpPhoto", "FacePhoto", "RefreshTokens",
+			},
+			[]string{
+				"-",
+			},
+		),
 		SortableFields: []string{
 			"updated_at", "created_at", "username", "fullname", "legalname",
 		},

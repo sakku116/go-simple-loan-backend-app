@@ -19,11 +19,11 @@ func NewMinioClient() *minio.Client {
 	}
 
 	// verify connection
-	err = minioClient.MakeBucket(context.Background(), "test", minio.MakeBucketOptions{})
+	buckets, err := minioClient.ListBuckets(context.Background())
 	if err != nil {
 		logger.Fatalf("failed to list buckets: %v", err)
 	}
-	// logger.Infof("successfully connected to MinIO. found %d buckets.", len(buckets))
+	logger.Infof("successfully connected to MinIO. found %d buckets.", len(buckets))
 
 	return minioClient
 }

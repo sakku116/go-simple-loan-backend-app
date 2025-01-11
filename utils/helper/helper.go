@@ -29,14 +29,30 @@ func PrettyJson(data interface{}) string {
 }
 
 func GetStructAttributesJson(s interface{}, exclude []string, excludeJsonValue []string) []string {
-	var attributes []string
+	// Dereference pointer if input is a pointer
 	t := reflect.TypeOf(s)
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
+	if t.Kind() != reflect.Struct {
+		panic("input must be a struct or a pointer to a struct")
+	}
+
+	var attributes []string
 
 	// Loop through the fields of the struct
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		if exclude != nil {
-			if ArrayContains(exclude, field.Name) {
+			contain := false
+			for _, v := range exclude {
+				if v == field.Name {
+					contain = true
+					break
+				}
+			}
+			if contain {
 				continue
 			}
 		}
@@ -47,7 +63,14 @@ func GetStructAttributesJson(s interface{}, exclude []string, excludeJsonValue [
 		}
 
 		if excludeJsonValue != nil {
-			if ArrayContains(excludeJsonValue, jsonValue) {
+			contain := false
+			for _, v := range excludeJsonValue {
+				if v == jsonValue {
+					contain = true
+					break
+				}
+			}
+			if contain {
 				continue
 			}
 		}

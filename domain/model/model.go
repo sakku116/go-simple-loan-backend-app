@@ -11,8 +11,12 @@ type MongoIndex struct {
 }
 
 type ModelProps struct {
-	MinioBucketName      string
+	BucketName           string
 	QueriableFields      []string
 	SortableFields       []string
 	DefaultSortableField string
+}
+
+type IModel interface {
+	GetProps() ModelProps
 }
