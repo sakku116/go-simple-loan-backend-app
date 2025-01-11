@@ -23,6 +23,7 @@ type IUserHandler interface {
 	UploadKtpPhoto(c *gin.Context)
 	UploadFacePhoto(c *gin.Context)
 	GetUserList(c *gin.Context)
+	UpdateCurrentLimit(c *gin.Context)
 }
 
 func NewUserHandler(
@@ -280,5 +281,32 @@ func (h UserHandler) GetUserList(c *gin.Context) {
 		h.respWriter.HTTPCustomErr(c, err)
 		return
 	}
+	h.respWriter.HTTPJsonOK(c, resp)
+}
+
+// @Summary Update user current limit (admin only)
+// @Tags User
+// @Accept json
+// @Produce json
+// @Param uuid path string true "User UUID"
+// @Param payload body dto.UpdateCurrentLimitReq true "payload"
+// @Success 200 {object} dto.BaseJSONResp{data=dto.UpdateCurrentLimitRespData}
+// @Security OAuth2Password
+// @Router /users/{uuid}/current-limit [post]
+func (h UserHandler) UpdateCurrentLimit(c *gin.Context) {
+	userUUID := c.Param("uuid")
+
+	var payload dto.UpdateCurrentLimitReq
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		h.respWriter.HTTPJson(c, 400, "invalid payload", err.Error(), nil)
+		return
+	}
+
+	resp, err := h.userUcase.UpdateCurrentLimit(c, userUUID, payload)
+	if err != nil {
+		h.respWriter.HTTPCustomErr(c, err)
+		return
+	}
+
 	h.respWriter.HTTPJsonOK(c, resp)
 }

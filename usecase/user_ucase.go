@@ -41,6 +41,11 @@ type IUserUcase interface {
 		ctx context.Context,
 		params dto.GetUserListReq,
 	) (*dto.GetUserListRespData, error)
+	UpdateCurrentLimit(
+		ctx context.Context,
+		userUUID string,
+		payload dto.UpdateCurrentLimitReq,
+	) (*dto.UpdateCurrentLimitRespData, error)
 }
 
 func NewUserUcase(
@@ -412,4 +417,45 @@ func (u *UserUcase) GetUserList(
 		}
 	}
 	return resp, nil
+}
+
+func (u *UserUcase) UpdateCurrentLimit(
+	ctx context.Context,
+	userUUID string,
+	payload dto.UpdateCurrentLimitReq,
+) (*dto.UpdateCurrentLimitRespData, error) {
+	// find user
+	user, err := u.userRepo.GetByUUID(userUUID)
+	if err != nil {
+		logger.Debugf("failed to get user: %v", err)
+		if err.Error() == "not found" {
+			return nil, &error_utils.CustomErr{
+				HttpCode: 404,
+				Message:  "user not found",
+				Detail:   err.Error(),
+			}
+		}
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	// update user
+	user.CurrentLimit = payload.CurrentLimit
+	user.UpdatedAt = helper.TimeNowUTC()
+	user, err = u.userRepo.Update(user)
+	if err != nil {
+		logger.Debugf("failed to update user: %v", err)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	return &dto.UpdateCurrentLimitRespData{
+		CurrentLimit: user.CurrentLimit,
+	}, nil
 }

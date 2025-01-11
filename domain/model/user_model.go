@@ -24,6 +24,7 @@ type User struct {
 	Birthplace    string        `gorm:"type:varchar(255);not null" json:"birthplace"`
 	Birthdate     string        `gorm:"type:varchar(255);not null" json:"birthdate"` // DD-MM-YYYY
 	CurrentSalary int64         `gorm:"type:bigint;not null" json:"current_salary"`
+	CurrentLimit  int64         `gorm:"type:bigint;not null" json:"current_limit"`
 
 	// these are required for requesting for loan
 	KtpPhoto  *string `gorm:"type:varchar(255);null" json:"ktp_photo"`
@@ -45,6 +46,7 @@ type BaseUserResponse struct {
 	CurrentSalary int64   `json:"current_salary"`
 	KtpPhoto      *string `json:"ktp_photo"`
 	FacePhoto     *string `json:"face_photo"`
+	CurrentLimit  int64   `json:"current_limit"`
 }
 
 func (u *User) ToBaseResponse(ctx context.Context, fileStorageUtil file_storage_util.IFileStorageUtil) BaseUserResponse {
@@ -76,6 +78,7 @@ func (u *User) ToBaseResponse(ctx context.Context, fileStorageUtil file_storage_
 		CurrentSalary: u.CurrentSalary,
 		KtpPhoto:      u.KtpPhoto,
 		FacePhoto:     u.FacePhoto,
+		CurrentLimit:  u.CurrentLimit,
 	}
 }
 

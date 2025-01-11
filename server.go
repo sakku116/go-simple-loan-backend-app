@@ -53,6 +53,7 @@ func SetupServer(ginEngine *gin.Engine, deps CommonDeps) {
 			userRouter.DELETE("/:uuid", adminOnlyMiddleware, userHandler.DeleteUser)
 			userRouter.POST("/ktp-photo", userHandler.UploadKtpPhoto)
 			userRouter.POST("/face-photo", userHandler.UploadFacePhoto)
+			userRouter.POST("/:uuid/current-limit", adminOnlyMiddleware, userHandler.UpdateCurrentLimit)
 		}
 	}
 

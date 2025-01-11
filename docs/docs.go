@@ -697,6 +697,63 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users/{uuid}/current-limit": {
+            "post": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update user current limit (admin only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateCurrentLimitReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseJSONResp"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UpdateCurrentLimitRespData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -806,6 +863,9 @@ const docTemplate = `{
                 "birthplace": {
                     "type": "string"
                 },
+                "current_limit": {
+                    "type": "integer"
+                },
                 "current_salary": {
                     "type": "integer"
                 },
@@ -847,6 +907,9 @@ const docTemplate = `{
                 "birthplace": {
                     "type": "string"
                 },
+                "current_limit": {
+                    "type": "integer"
+                },
                 "current_salary": {
                     "type": "integer"
                 },
@@ -887,6 +950,9 @@ const docTemplate = `{
                 },
                 "birthplace": {
                     "type": "string"
+                },
+                "current_limit": {
+                    "type": "integer"
                 },
                 "current_salary": {
                     "type": "integer"
@@ -1059,6 +1125,25 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateCurrentLimitReq": {
+            "type": "object",
+            "required": [
+                "current_limit"
+            ],
+            "properties": {
+                "current_limit": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateCurrentLimitRespData": {
+            "type": "object",
+            "properties": {
+                "current_limit": {
+                    "type": "integer"
+                }
+            }
+        },
         "dto.UpdateUserReq": {
             "type": "object",
             "properties": {
@@ -1103,6 +1188,9 @@ const docTemplate = `{
                 },
                 "birthplace": {
                     "type": "string"
+                },
+                "current_limit": {
+                    "type": "integer"
                 },
                 "current_salary": {
                     "type": "integer"
@@ -1182,6 +1270,9 @@ const docTemplate = `{
                 },
                 "birthplace": {
                     "type": "string"
+                },
+                "current_limit": {
+                    "type": "integer"
                 },
                 "current_salary": {
                     "type": "integer"

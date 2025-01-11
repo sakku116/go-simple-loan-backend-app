@@ -211,3 +211,11 @@ type GetUserListRespData struct {
 	BasePaginationRespData
 	Data []model.BaseUserResponse `json:"data"`
 }
+
+type UpdateCurrentLimitReq struct {
+	CurrentLimit int64 `json:"current_limit" binding:"required"`
+}
+
+type UpdateCurrentLimitRespData struct {
+	CurrentLimit int64 `json:"current_limit"`
+}

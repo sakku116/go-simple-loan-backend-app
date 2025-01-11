@@ -71,6 +71,8 @@ definitions:
         type: string
       birthplace:
         type: string
+      current_limit:
+        type: integer
       current_salary:
         type: integer
       email:
@@ -98,6 +100,8 @@ definitions:
         type: string
       birthplace:
         type: string
+      current_limit:
+        type: integer
       current_salary:
         type: integer
       email:
@@ -125,6 +129,8 @@ definitions:
         type: string
       birthplace:
         type: string
+      current_limit:
+        type: integer
       current_salary:
         type: integer
       email:
@@ -240,6 +246,18 @@ definitions:
       refresh_token:
         type: string
     type: object
+  dto.UpdateCurrentLimitReq:
+    properties:
+      current_limit:
+        type: integer
+    required:
+    - current_limit
+    type: object
+  dto.UpdateCurrentLimitRespData:
+    properties:
+      current_limit:
+        type: integer
+    type: object
   dto.UpdateUserReq:
     properties:
       birthdate:
@@ -270,6 +288,8 @@ definitions:
         type: string
       birthplace:
         type: string
+      current_limit:
+        type: integer
       current_salary:
         type: integer
       email:
@@ -323,6 +343,8 @@ definitions:
         type: string
       birthplace:
         type: string
+      current_limit:
+        type: integer
       current_salary:
         type: integer
       email:
@@ -666,6 +688,39 @@ paths:
       security:
       - OAuth2Password: []
       summary: Update user by UUID (admin only)
+      tags:
+      - User
+  /users/{uuid}/current-limit:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateCurrentLimitReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UpdateCurrentLimitRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Update user current limit (admin only)
       tags:
       - User
   /users/face-photo:
