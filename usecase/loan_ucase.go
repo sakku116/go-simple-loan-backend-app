@@ -98,9 +98,6 @@ func (ucase *LoanUcase) CreateNewLoan(
 	// calculate installment amount
 	newLoan.InstallmentAmount = (newLoan.OTR + newLoan.InterestRate + newLoan.AdminFee) / float64(newLoan.TermMonths)
 
-	// pretend that loan status has been changed to APPROVED by admin or advanced system logic(separate logic if needed)
-	newLoan.Status = enum.LoanStatus_APPROVED
-
 	// validate total amount by current user loan limit
 	if user.CurrentLimit == 0 {
 		return nil, &error_utils.CustomErr{
