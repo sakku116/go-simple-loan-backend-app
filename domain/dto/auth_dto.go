@@ -15,15 +15,15 @@ type CurrentUser struct {
 }
 
 type RegisterUserReq struct {
-	Email         string `json:"email" validate:"required,email"`
-	Username      string `json:"username" validate:"required"`
-	Password      string `json:"password" validate:"required"`
-	Fullname      string `json:"fullname" validate:"required"`
-	Legalname     string `json:"legalname" validate:"required"`
-	NIK           string `json:"nik" validate:"required"`
-	Birthplace    string `json:"birthplace" validate:"required"`
-	Birthdate     string `json:"birthdate" validate:"required"` // DD-MM-YYYY
-	CurrentSalary int64  `json:"current_salary" validate:"required"`
+	Email         string  `json:"email" validate:"required,email"`
+	Username      string  `json:"username" validate:"required"`
+	Password      string  `json:"password" validate:"required"`
+	Fullname      string  `json:"fullname" validate:"required"`
+	Legalname     string  `json:"legalname" validate:"required"`
+	NIK           string  `json:"nik" validate:"required"`
+	Birthplace    string  `json:"birthplace" validate:"required"`
+	Birthdate     string  `json:"birthdate" validate:"required"` // DD-MM-YYYY
+	CurrentSalary float64 `json:"current_salary" validate:"required"`
 }
 
 func (req *RegisterUserReq) Validate() error {

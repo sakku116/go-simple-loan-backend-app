@@ -417,10 +417,8 @@ func (u *UserUcase) GetUserList(
 	// response
 	resp := &dto.GetUserListRespData{}
 	resp.SetPagination(totalData, params.Page, params.Limit)
-	if data != nil {
-		for _, v := range data {
-			resp.Data = append(resp.Data, v.ToBaseResponse(ctx, u.fileStorageUtil))
-		}
+	for _, v := range data {
+		resp.Data = append(resp.Data, v.ToBaseResponse(ctx, u.fileStorageUtil))
 	}
 	return resp, nil
 }

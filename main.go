@@ -49,10 +49,14 @@ func main() {
 
 	// ensure buckets
 	err = minio_util.EnsureBucketsFromModels(minioClient, &model.User{})
+	if err != nil {
+		logger.Fatalf("failed to ensure buckets: %v", err)
+	}
 
 	// repositories
 	userRepo := repository.NewUserRepo(gormDB)
 	refreshTokenRepo := repository.NewRefreshTokenRepo(gormDB)
+	loanRepo := repository.NewLoanRepo(gormDB)
 
 	// utils
 	fileStorageUtil := file_storage_util.NewFileStorageUtil(minioClient)
@@ -60,10 +64,12 @@ func main() {
 	// ucases
 	authUcase := ucase.NewAuthUcase(userRepo, refreshTokenRepo)
 	userUcase := ucase.NewUserUcase(userRepo, fileStorageUtil)
+	loanUcase := ucase.NewLoanuCase(loanRepo, userRepo)
 
 	dependencies := CommonDeps{
 		AuthUcase: authUcase,
 		UserUcase: userUcase,
+		LoanUcase: loanUcase,
 	}
 
 	// proccess args

@@ -19,6 +19,7 @@ func SetupServer(ginEngine *gin.Engine, deps CommonDeps) {
 	// handlers
 	authHandler := handler.NewAuthHandler(responseWriter, deps.AuthUcase)
 	userHandler := handler.NewUserHandler(responseWriter, deps.UserUcase)
+	loanHandler := handler.NewLoanHandler(responseWriter, deps.LoanUcase)
 
 	// register routes
 	router := ginEngine
@@ -54,6 +55,11 @@ func SetupServer(ginEngine *gin.Engine, deps CommonDeps) {
 			userRouter.POST("/ktp-photo", userHandler.UploadKtpPhoto)
 			userRouter.POST("/face-photo", userHandler.UploadFacePhoto)
 			userRouter.POST("/:uuid/current-limit", adminOnlyMiddleware, userHandler.UpdateCurrentLimit)
+		}
+
+		loanRouter := securedRouter.Group("/loans")
+		{
+			loanRouter.POST("", loanHandler.CreateNewLoan)
 		}
 	}
 

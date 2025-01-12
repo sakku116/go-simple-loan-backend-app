@@ -23,7 +23,7 @@ type CreateUserReq struct {
 	NIK           string        `json:"nik" validate:"required"`
 	Birthplace    string        `json:"birthplace" validate:"required"`
 	Birthdate     string        `json:"birthdate" validate:"required"` // DD-MM-YYYY
-	CurrentSalary int64         `json:"current_salary" validate:"required"`
+	CurrentSalary float64       `json:"current_salary" validate:"required"`
 }
 
 func (req *CreateUserReq) Validate() error {
@@ -61,7 +61,7 @@ type UpdateUserReq struct {
 	NIK           *string        `json:"nik"`
 	Birthplace    *string        `json:"birthplace"`
 	Birthdate     *string        `json:"birthdate"` // DD-MM-YYYY
-	CurrentSalary *int64         `json:"current_salary"`
+	CurrentSalary *float64       `json:"current_salary"`
 }
 
 func (req *UpdateUserReq) Validate() error {
@@ -213,9 +213,9 @@ type GetUserListRespData struct {
 }
 
 type UpdateCurrentLimitReq struct {
-	CurrentLimit int64 `json:"current_limit" binding:"required"`
+	CurrentLimit float64 `json:"current_limit" binding:"required"`
 }
 
 type UpdateCurrentLimitRespData struct {
-	CurrentLimit int64 `json:"current_limit"`
+	CurrentLimit float64 `json:"current_limit"`
 }

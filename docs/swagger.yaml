@@ -26,6 +26,42 @@ definitions:
       uuid:
         type: string
     type: object
+  dto.CreateNewLoanReq:
+    properties:
+      asset_name:
+        type: string
+      otr:
+        type: number
+      term_months:
+        $ref: '#/definitions/enum.LoanTermMonths'
+    required:
+    - asset_name
+    - otr
+    - term_months
+    type: object
+  dto.CreateNewLoanRespData:
+    properties:
+      admin_fee:
+        type: number
+      admin_fee_percentage:
+        type: number
+      asset_name:
+        type: string
+      interest_rate:
+        type: number
+      interest_rate_percentage:
+        type: number
+      otr:
+        type: number
+      ref_number:
+        type: integer
+      status:
+        $ref: '#/definitions/enum.LoanStatus'
+      term_months:
+        $ref: '#/definitions/enum.LoanTermMonths'
+      user_uuid:
+        type: string
+    type: object
   dto.CreateUserReq:
     properties:
       birthdate:
@@ -34,7 +70,7 @@ definitions:
       birthplace:
         type: string
       current_salary:
-        type: integer
+        type: number
       email:
         type: string
       fullname:
@@ -72,9 +108,9 @@ definitions:
       birthplace:
         type: string
       current_limit:
-        type: integer
+        type: number
       current_salary:
-        type: integer
+        type: number
       email:
         type: string
       face_photo:
@@ -101,9 +137,9 @@ definitions:
       birthplace:
         type: string
       current_limit:
-        type: integer
+        type: number
       current_salary:
-        type: integer
+        type: number
       email:
         type: string
       face_photo:
@@ -130,9 +166,9 @@ definitions:
       birthplace:
         type: string
       current_limit:
-        type: integer
+        type: number
       current_salary:
-        type: integer
+        type: number
       email:
         type: string
       face_photo:
@@ -215,7 +251,7 @@ definitions:
       birthplace:
         type: string
       current_salary:
-        type: integer
+        type: number
       email:
         type: string
       fullname:
@@ -249,14 +285,14 @@ definitions:
   dto.UpdateCurrentLimitReq:
     properties:
       current_limit:
-        type: integer
+        type: number
     required:
     - current_limit
     type: object
   dto.UpdateCurrentLimitRespData:
     properties:
       current_limit:
-        type: integer
+        type: number
     type: object
   dto.UpdateUserReq:
     properties:
@@ -266,7 +302,7 @@ definitions:
       birthplace:
         type: string
       current_salary:
-        type: integer
+        type: number
       email:
         type: string
       fullname:
@@ -289,9 +325,9 @@ definitions:
       birthplace:
         type: string
       current_limit:
-        type: integer
+        type: number
       current_salary:
-        type: integer
+        type: number
       email:
         type: string
       face_photo:
@@ -321,6 +357,30 @@ definitions:
       ktp_photo:
         type: string
     type: object
+  enum.LoanStatus:
+    enum:
+    - PENDING
+    - APPROVED
+    - REJECTED
+    - PAID
+    type: string
+    x-enum-varnames:
+    - LoanStatus_PENDING
+    - LoanStatus_APPROVED
+    - LoanStatus_REJECTED
+    - LoanStatus_PAID
+  enum.LoanTermMonths:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 6
+    type: integer
+    x-enum-varnames:
+    - LoanTermMonths_1
+    - LoanTermMonths_2
+    - LoanTermMonths_3
+    - LoanTermMonths_6
   enum.SortOrder:
     enum:
     - asc
@@ -344,9 +404,9 @@ definitions:
       birthplace:
         type: string
       current_limit:
-        type: integer
+        type: number
       current_salary:
-        type: integer
+        type: number
       email:
         type: string
       face_photo:
@@ -484,6 +544,34 @@ paths:
       summary: register new user
       tags:
       - Auth
+  /loans:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Create loan rquest
+        in: body
+        name: loan
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateNewLoanReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.CreateNewLoanRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Create new loan (current user)
+      tags:
+      - Loan
   /users:
     get:
       consumes:

@@ -216,6 +216,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/loans": {
+            "post": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Loan"
+                ],
+                "summary": "Create new loan (current user)",
+                "parameters": [
+                    {
+                        "description": "Create loan rquest",
+                        "name": "loan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateNewLoanReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseJSONResp"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.CreateNewLoanRespData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "security": [
@@ -798,6 +848,60 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateNewLoanReq": {
+            "type": "object",
+            "required": [
+                "asset_name",
+                "otr",
+                "term_months"
+            ],
+            "properties": {
+                "asset_name": {
+                    "type": "string"
+                },
+                "otr": {
+                    "type": "number"
+                },
+                "term_months": {
+                    "$ref": "#/definitions/enum.LoanTermMonths"
+                }
+            }
+        },
+        "dto.CreateNewLoanRespData": {
+            "type": "object",
+            "properties": {
+                "admin_fee": {
+                    "type": "number"
+                },
+                "admin_fee_percentage": {
+                    "type": "number"
+                },
+                "asset_name": {
+                    "type": "string"
+                },
+                "interest_rate": {
+                    "type": "number"
+                },
+                "interest_rate_percentage": {
+                    "type": "number"
+                },
+                "otr": {
+                    "type": "number"
+                },
+                "ref_number": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/enum.LoanStatus"
+                },
+                "term_months": {
+                    "$ref": "#/definitions/enum.LoanTermMonths"
+                },
+                "user_uuid": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateUserReq": {
             "type": "object",
             "required": [
@@ -821,7 +925,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "current_salary": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "email": {
                     "type": "string"
@@ -864,10 +968,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "current_limit": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "current_salary": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "email": {
                     "type": "string"
@@ -908,10 +1012,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "current_limit": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "current_salary": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "email": {
                     "type": "string"
@@ -952,10 +1056,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "current_limit": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "current_salary": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "email": {
                     "type": "string"
@@ -1092,7 +1196,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "current_salary": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "email": {
                     "type": "string"
@@ -1132,7 +1236,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "current_limit": {
-                    "type": "integer"
+                    "type": "number"
                 }
             }
         },
@@ -1140,7 +1244,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "current_limit": {
-                    "type": "integer"
+                    "type": "number"
                 }
             }
         },
@@ -1155,7 +1259,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "current_salary": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "email": {
                     "type": "string"
@@ -1190,10 +1294,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "current_limit": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "current_salary": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "email": {
                     "type": "string"
@@ -1240,6 +1344,36 @@ const docTemplate = `{
                 }
             }
         },
+        "enum.LoanStatus": {
+            "type": "string",
+            "enum": [
+                "PENDING",
+                "APPROVED",
+                "REJECTED",
+                "PAID"
+            ],
+            "x-enum-varnames": [
+                "LoanStatus_PENDING",
+                "LoanStatus_APPROVED",
+                "LoanStatus_REJECTED",
+                "LoanStatus_PAID"
+            ]
+        },
+        "enum.LoanTermMonths": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3,
+                6
+            ],
+            "x-enum-varnames": [
+                "LoanTermMonths_1",
+                "LoanTermMonths_2",
+                "LoanTermMonths_3",
+                "LoanTermMonths_6"
+            ]
+        },
         "enum.SortOrder": {
             "type": "string",
             "enum": [
@@ -1272,10 +1406,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "current_limit": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "current_salary": {
-                    "type": "integer"
+                    "type": "number"
                 },
                 "email": {
                     "type": "string"
