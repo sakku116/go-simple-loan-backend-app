@@ -298,7 +298,7 @@ func (u *UserUcase) UploadKtpPhoto(ctx context.Context, userUUID string, file *m
 	// update user
 	user.KtpPhoto = &filename
 	user.UpdatedAt = helper.TimeNowUTC()
-	user, err = u.userRepo.Update(user)
+	_, err = u.userRepo.Update(user)
 	if err != nil {
 		logger.Debugf("failed to update user: %v", err)
 		return nil, &error_utils.CustomErr{
@@ -359,7 +359,7 @@ func (u *UserUcase) UploadFacePhoto(ctx context.Context, userUUID string, file *
 	// update user
 	user.FacePhoto = &filename
 	user.UpdatedAt = helper.TimeNowUTC()
-	user, err = u.userRepo.Update(user)
+	_, err = u.userRepo.Update(user)
 	if err != nil {
 		logger.Debugf("failed to update user: %v", err)
 		return nil, &error_utils.CustomErr{
@@ -451,7 +451,7 @@ func (u *UserUcase) UpdateCurrentLimit(
 	// update user
 	user.CurrentLimit = payload.CurrentLimit
 	user.UpdatedAt = helper.TimeNowUTC()
-	user, err = u.userRepo.Update(user)
+	_, err = u.userRepo.Update(user)
 	if err != nil {
 		logger.Debugf("failed to update user: %v", err)
 		return nil, &error_utils.CustomErr{
