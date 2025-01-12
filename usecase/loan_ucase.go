@@ -23,6 +23,13 @@ type ILoanUcase interface {
 		userUUID string,
 		payload dto.CreateNewLoanReq,
 	) (*dto.CreateNewLoanRespData, error)
+	UpdateLoanStatus(
+		loanUUID string,
+		payload dto.UpdateLoanStatusReq,
+	) (*dto.UpdateLoanStatusRespData, error)
+	GetLoanList(
+		params dto.GetLoanListReq,
+	) (*dto.GetLoanListRespData, error)
 }
 
 func NewLoanuCase(
@@ -94,14 +101,14 @@ func (ucase *LoanUcase) CreateNewLoan(
 	// pretend that loan status has been changed to APPROVED by admin or advanced system logic(separate logic if needed)
 	newLoan.Status = enum.LoanStatus_APPROVED
 
-	// validate OTR by current user loan limit
+	// validate total amount by current user loan limit
 	if user.CurrentLimit == 0 {
 		return nil, &error_utils.CustomErr{
 			HttpCode: 400,
 			Message:  "user has no current limit",
 		}
 	}
-	existingClosedLoans, err := ucase.loanRepo.GetPaidListByUserID(user.ID)
+	existingUnpaidLoan, err := ucase.loanRepo.GetUnPaidListByUserID(user.ID)
 	if err != nil {
 		logger.Debugf("failed to get existing closed loans: %v", err)
 		return nil, &error_utils.CustomErr{
@@ -111,7 +118,7 @@ func (ucase *LoanUcase) CreateNewLoan(
 		}
 	}
 	var currentUsedLimit float64
-	for _, loan := range existingClosedLoans {
+	for _, loan := range existingUnpaidLoan {
 		currentUsedLimit += loan.TotalAmount
 	}
 	if newLoan.TotalAmount+currentUsedLimit > float64(user.CurrentLimit) {
@@ -135,6 +142,99 @@ func (ucase *LoanUcase) CreateNewLoan(
 
 	currentUsedLimit += newLoan.TotalAmount
 	return &dto.CreateNewLoanRespData{
-		BaseLoanResponse: newLoan.ToBaseResponse(user.CurrentLimit, currentUsedLimit),
+		BaseLoanResponse:      newLoan.ToBaseResponse(),
+		CurrentLimitRemaining: user.CurrentLimit - currentUsedLimit,
 	}, nil
+}
+
+func (ucase *LoanUcase) UpdateLoanStatus(
+	loanUUID string,
+	payload dto.UpdateLoanStatusReq,
+) (*dto.UpdateLoanStatusRespData, error) {
+	err := payload.Validate()
+	if err != nil {
+		return nil, &error_utils.CustomErr{
+			HttpCode: 400,
+			Message:  err.Error(),
+		}
+	}
+
+	// find loan
+	loan, err := ucase.loanRepo.GetByUUID(loanUUID)
+	if err != nil {
+		logger.Debugf("failed to get loan: %v", err)
+		if strings.Contains(err.Error(), "not found") {
+			return nil, &error_utils.CustomErr{
+				HttpCode: 404,
+				Message:  "loan not found",
+				Detail:   err.Error(),
+			}
+		}
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	// update loan
+	loan.Status = payload.Status
+	_, err = ucase.loanRepo.Update(loan)
+	if err != nil {
+		logger.Debugf("failed to update loan: %v", err)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	return &dto.UpdateLoanStatusRespData{
+		Status: loan.Status,
+	}, nil
+}
+
+func (ucase *LoanUcase) GetLoanList(
+	params dto.GetLoanListReq,
+) (*dto.GetLoanListRespData, error) {
+	err := params.Validate()
+	if err != nil {
+		return nil, &error_utils.CustomErr{
+			HttpCode: 400,
+			Message:  "bad request",
+			Detail:   err.Error(),
+		}
+	}
+
+	// prepare dto
+	repoDto := dto.LoanRepo_GetListParams{
+		UserUUID:  params.UserUUID,
+		Status:    params.Status,
+		Query:     params.Query,
+		QueryBy:   params.QueryBy,
+		Page:      &params.Page,
+		Limit:     &params.Limit,
+		SortOrder: params.SortOrder,
+		SortBy:    params.SortBy,
+		DoCount:   true,
+	}
+
+	data, totalData, err := ucase.loanRepo.GetList(repoDto)
+	if err != nil {
+		logger.Debugf("failed to get loan list: %v", err)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	// response
+	resp := &dto.GetLoanListRespData{}
+	resp.SetPagination(totalData, params.Page, params.Limit)
+	for _, loan := range data {
+		resp.Data = append(resp.Data, loan.ToBaseResponse())
+	}
+
+	return resp, nil
 }

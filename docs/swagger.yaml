@@ -47,6 +47,12 @@ definitions:
         type: number
       asset_name:
         type: string
+      created_at:
+        type: string
+      current_limit_remaining:
+        type: number
+      installment_amount:
+        type: number
       interest_rate:
         type: number
       interest_rate_percentage:
@@ -59,7 +65,13 @@ definitions:
         $ref: '#/definitions/enum.LoanStatus'
       term_months:
         $ref: '#/definitions/enum.LoanTermMonths'
+      total_amount:
+        type: number
+      updated_at:
+        type: string
       user_uuid:
+        type: string
+      uuid:
         type: string
     type: object
   dto.CreateUserReq:
@@ -158,6 +170,19 @@ definitions:
         type: string
       uuid:
         type: string
+    type: object
+  dto.GetLoanListRespData:
+    properties:
+      current_page:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/model.BaseLoanResponse'
+        type: array
+      total:
+        type: integer
+      total_page:
+        type: integer
     type: object
   dto.GetUserByUUIDResp:
     properties:
@@ -294,6 +319,18 @@ definitions:
       current_limit:
         type: number
     type: object
+  dto.UpdateLoanStatusReq:
+    properties:
+      status:
+        $ref: '#/definitions/enum.LoanStatus'
+    required:
+    - status
+    type: object
+  dto.UpdateLoanStatusRespData:
+    properties:
+      status:
+        $ref: '#/definitions/enum.LoanStatus'
+    type: object
   dto.UpdateUserReq:
     properties:
       birthdate:
@@ -397,6 +434,39 @@ definitions:
     x-enum-varnames:
     - UserRole_User
     - UserRole_Admin
+  model.BaseLoanResponse:
+    properties:
+      admin_fee:
+        type: number
+      admin_fee_percentage:
+        type: number
+      asset_name:
+        type: string
+      created_at:
+        type: string
+      installment_amount:
+        type: number
+      interest_rate:
+        type: number
+      interest_rate_percentage:
+        type: number
+      otr:
+        type: number
+      ref_number:
+        type: integer
+      status:
+        $ref: '#/definitions/enum.LoanStatus'
+      term_months:
+        $ref: '#/definitions/enum.LoanTermMonths'
+      total_amount:
+        type: number
+      updated_at:
+        type: string
+      user_uuid:
+        type: string
+      uuid:
+        type: string
+    type: object
   model.BaseUserResponse:
     properties:
       birthdate:
@@ -545,6 +615,78 @@ paths:
       tags:
       - Auth
   /loans:
+    get:
+      consumes:
+      - application/json
+      description: Get loan list
+      parameters:
+      - default: 10
+        in: query
+        name: limit
+        type: integer
+      - default: 1
+        in: query
+        name: page
+        type: integer
+      - in: query
+        name: query
+        type: string
+      - description: leave empty to query by all
+        enum:
+        - asset_name
+        - ref_number
+        in: query
+        name: query_by
+        type: string
+      - default: updated_at
+        enum:
+        - updated_at
+        in: query
+        name: sort_by
+        type: string
+      - default: desc
+        enum:
+        - asc
+        - desc
+        in: query
+        name: sort_order
+        type: string
+        x-enum-varnames:
+        - SortOrder_asc
+        - SortOrder_desc
+      - enum:
+        - PENDING
+        - APPROVED
+        - REJECTED
+        - PAID
+        in: query
+        name: status
+        type: string
+        x-enum-varnames:
+        - LoanStatus_PENDING
+        - LoanStatus_APPROVED
+        - LoanStatus_REJECTED
+        - LoanStatus_PAID
+      - in: query
+        name: user_uuid
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.GetLoanListRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Get loan list
+      tags:
+      - Loan
     post:
       consumes:
       - application/json
@@ -570,6 +712,39 @@ paths:
       security:
       - OAuth2Password: []
       summary: Create new loan (current user)
+      tags:
+      - Loan
+  /loans/{uuid}/status:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Loan UUID
+        in: path
+        name: uuid
+        required: true
+        type: string
+      - description: update loan status rquest
+        in: body
+        name: loan
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateLoanStatusReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/dto.BaseJSONResp'
+            - properties:
+                data:
+                  $ref: '#/definitions/dto.UpdateLoanStatusRespData'
+              type: object
+      security:
+      - OAuth2Password: []
+      summary: Update loan status (admin only)
       tags:
       - Loan
   /users:

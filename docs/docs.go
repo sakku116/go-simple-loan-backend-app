@@ -217,6 +217,118 @@ const docTemplate = `{
             }
         },
         "/loans": {
+            "get": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "description": "Get loan list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Loan"
+                ],
+                "summary": "Get loan list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "query",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asset_name",
+                            "ref_number"
+                        ],
+                        "type": "string",
+                        "description": "leave empty to query by all",
+                        "name": "query_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "updated_at"
+                        ],
+                        "type": "string",
+                        "default": "updated_at",
+                        "name": "sort_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "asc",
+                            "desc"
+                        ],
+                        "type": "string",
+                        "default": "desc",
+                        "x-enum-varnames": [
+                            "SortOrder_asc",
+                            "SortOrder_desc"
+                        ],
+                        "name": "sort_order",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "PENDING",
+                            "APPROVED",
+                            "REJECTED",
+                            "PAID"
+                        ],
+                        "type": "string",
+                        "x-enum-varnames": [
+                            "LoanStatus_PENDING",
+                            "LoanStatus_APPROVED",
+                            "LoanStatus_REJECTED",
+                            "LoanStatus_PAID"
+                        ],
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "user_uuid",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseJSONResp"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.GetLoanListRespData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
             "post": {
                 "security": [
                     {
@@ -257,6 +369,63 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/dto.CreateNewLoanRespData"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/loans/{uuid}/status": {
+            "post": {
+                "security": [
+                    {
+                        "OAuth2Password": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Loan"
+                ],
+                "summary": "Update loan status (admin only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Loan UUID",
+                        "name": "uuid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "update loan status rquest",
+                        "name": "loan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateLoanStatusReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/dto.BaseJSONResp"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/dto.UpdateLoanStatusRespData"
                                         }
                                     }
                                 }
@@ -879,6 +1048,15 @@ const docTemplate = `{
                 "asset_name": {
                     "type": "string"
                 },
+                "created_at": {
+                    "type": "string"
+                },
+                "current_limit_remaining": {
+                    "type": "number"
+                },
+                "installment_amount": {
+                    "type": "number"
+                },
                 "interest_rate": {
                     "type": "number"
                 },
@@ -897,7 +1075,16 @@ const docTemplate = `{
                 "term_months": {
                     "$ref": "#/definitions/enum.LoanTermMonths"
                 },
+                "total_amount": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
                 "user_uuid": {
+                    "type": "string"
+                },
+                "uuid": {
                     "type": "string"
                 }
             }
@@ -1043,6 +1230,26 @@ const docTemplate = `{
                 },
                 "uuid": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.GetLoanListRespData": {
+            "type": "object",
+            "properties": {
+                "current_page": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.BaseLoanResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "total_page": {
+                    "type": "integer"
                 }
             }
         },
@@ -1248,6 +1455,25 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.UpdateLoanStatusReq": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/enum.LoanStatus"
+                }
+            }
+        },
+        "dto.UpdateLoanStatusRespData": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/enum.LoanStatus"
+                }
+            }
+        },
         "dto.UpdateUserReq": {
             "type": "object",
             "properties": {
@@ -1395,6 +1621,56 @@ const docTemplate = `{
                 "UserRole_User",
                 "UserRole_Admin"
             ]
+        },
+        "model.BaseLoanResponse": {
+            "type": "object",
+            "properties": {
+                "admin_fee": {
+                    "type": "number"
+                },
+                "admin_fee_percentage": {
+                    "type": "number"
+                },
+                "asset_name": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "installment_amount": {
+                    "type": "number"
+                },
+                "interest_rate": {
+                    "type": "number"
+                },
+                "interest_rate_percentage": {
+                    "type": "number"
+                },
+                "otr": {
+                    "type": "number"
+                },
+                "ref_number": {
+                    "type": "integer"
+                },
+                "status": {
+                    "$ref": "#/definitions/enum.LoanStatus"
+                },
+                "term_months": {
+                    "$ref": "#/definitions/enum.LoanTermMonths"
+                },
+                "total_amount": {
+                    "type": "number"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_uuid": {
+                    "type": "string"
+                },
+                "uuid": {
+                    "type": "string"
+                }
+            }
         },
         "model.BaseUserResponse": {
             "type": "object",

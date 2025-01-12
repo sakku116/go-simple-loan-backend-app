@@ -60,6 +60,8 @@ func SetupServer(ginEngine *gin.Engine, deps CommonDeps) {
 		loanRouter := securedRouter.Group("/loans")
 		{
 			loanRouter.POST("", loanHandler.CreateNewLoan)
+			loanRouter.POST("/:uuid/status", adminOnlyMiddleware, loanHandler.UpdateLoanStatus)
+			loanRouter.GET("", loanHandler.GetLoanList)
 		}
 	}
 

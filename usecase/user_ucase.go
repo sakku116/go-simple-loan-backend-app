@@ -389,19 +389,24 @@ func (u *UserUcase) GetUserList(
 	ctx context.Context,
 	params dto.GetUserListReq,
 ) (*dto.GetUserListRespData, error) {
+	err := params.Validate()
+	if err != nil {
+		return nil, &error_utils.CustomErr{
+			HttpCode: 400,
+			Message:  "bad request",
+			Detail:   err.Error(),
+		}
+	}
+
 	// prepare dto
 	repoDto := dto.UserRepo_GetListParams{
 		Query:     params.Query,
+		QueryBy:   params.QueryBy,
 		Page:      &params.Page,
 		Limit:     &params.Limit,
 		SortOrder: params.SortOrder,
 		SortBy:    params.SortBy,
 		DoCount:   true,
-	}
-	if params.QueryBy != nil && *params.QueryBy != "" {
-		repoDto.QueryBy = params.QueryBy
-	} else {
-		repoDto.QueryBy = nil
 	}
 
 	data, totalData, err := u.userRepo.GetList(repoDto)

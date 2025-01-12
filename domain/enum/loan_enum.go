@@ -38,15 +38,17 @@ const (
 	LoanStatus_PAID     = LoanStatus("PAID")
 )
 
+var ValidLoanStatus = []LoanStatus{
+	LoanStatus_PENDING, LoanStatus_APPROVED,
+	LoanStatus_REJECTED, LoanStatus_PAID,
+}
+
 func (e LoanStatus) String() string {
 	return string(e)
 }
 
 func (e LoanStatus) IsValid() bool {
-	for _, item := range []LoanStatus{
-		LoanStatus_PENDING, LoanStatus_APPROVED,
-		LoanStatus_REJECTED, LoanStatus_PAID,
-	} {
+	for _, item := range ValidLoanStatus {
 		if item == e {
 			return true
 		}

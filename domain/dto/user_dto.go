@@ -65,6 +65,12 @@ type UpdateUserReq struct {
 }
 
 func (req *UpdateUserReq) Validate() error {
+	if req.Role != nil {
+		valid := (*req.Role).IsValid()
+		if !valid {
+			return errors.New("user validation error: invalid role")
+		}
+	}
 	if req.Username != nil {
 		err := validator_util.ValidateUsername(*req.Username)
 		if err != nil {
@@ -166,6 +172,10 @@ type UserRepo_GetListParams struct {
 }
 
 func (params *UserRepo_GetListParams) Validate() error {
+	if params.SortOrder != nil && !(*params.SortOrder).IsValid() {
+		return fmt.Errorf("invalid sort_order")
+	}
+
 	tmp := model.User{}
 	if params.QueryBy != nil {
 		queriableFields := tmp.GetProps().QueriableFields
@@ -204,7 +214,19 @@ type GetUserListReq struct {
 	Page      int             `form:"page" default:"1"`
 	Limit     int             `form:"limit" default:"10"`
 	SortOrder *enum.SortOrder `form:"sort_order" binding:"omitempty,oneof=asc desc" default:"desc"`
-	SortBy    *string         `form:"sort_by" binding:"oneof=updated_at username email nik fullname legalname role" default:"updated_at"`
+	SortBy    *string         `form:"sort_by" binding:"omitempty,oneof=updated_at username email nik fullname legalname role" default:"updated_at"`
+}
+
+func (params *GetUserListReq) Validate() error {
+	if params.SortOrder != nil && !(*params.SortOrder).IsValid() {
+		return fmt.Errorf("invalid sort_order")
+	}
+
+	if params.QueryBy != nil && *params.QueryBy == "" {
+		params.QueryBy = nil
+	}
+
+	return nil
 }
 
 type GetUserListRespData struct {

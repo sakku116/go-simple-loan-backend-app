@@ -2,6 +2,7 @@ package model
 
 import (
 	"backend/domain/enum"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -27,7 +28,22 @@ type Loan struct {
 	User User `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
+func (u *Loan) GetProps() ModelProps {
+	return ModelProps{
+		QueriableFields: []string{
+			"asset_name", "ref_number",
+		},
+		SortableFields: []string{
+			"updated_at", "created_at", "asset_name",
+		},
+		DefaultSortableField: "updated_at",
+	}
+}
+
 type BaseLoanResponse struct {
+	UUID                   string              `json:"uuid"`
+	CreatedAt              time.Time           `json:"created_at"`
+	UpdatedAt              time.Time           `json:"updated_at"`
 	UserUUID               string              `json:"user_uuid"`
 	AssetName              string              `json:"asset_name"`
 	RefNumber              int64               `json:"ref_number"`
@@ -40,11 +56,13 @@ type BaseLoanResponse struct {
 	TotalAmount            float64             `json:"total_amount"`
 	TermMonths             enum.LoanTermMonths `json:"term_months"`
 	Status                 enum.LoanStatus     `json:"status"`
-	CurrentLimitRemaining  float64             `json:"current_limit_remaining"`
 }
 
-func (loan *Loan) ToBaseResponse(userCurrentLimit, usedLimit float64) BaseLoanResponse {
-	return BaseLoanResponse{
+func (loan *Loan) ToBaseResponse() BaseLoanResponse {
+	data := BaseLoanResponse{
+		UUID:                   loan.UUID,
+		CreatedAt:              loan.CreatedAt,
+		UpdatedAt:              loan.UpdatedAt,
 		UserUUID:               loan.UserUUID,
 		AssetName:              loan.AssetName,
 		RefNumber:              loan.RefNumber,
@@ -57,6 +75,6 @@ func (loan *Loan) ToBaseResponse(userCurrentLimit, usedLimit float64) BaseLoanRe
 		TotalAmount:            loan.TotalAmount,
 		TermMonths:             loan.TermMonths,
 		Status:                 loan.Status,
-		CurrentLimitRemaining:  userCurrentLimit - usedLimit,
 	}
+	return data
 }
