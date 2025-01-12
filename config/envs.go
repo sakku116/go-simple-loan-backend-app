@@ -25,6 +25,12 @@ type EnvsSchema struct {
 	INITIAL_USER_PASSWORD  string
 	INITIAL_ADMIN_USERNAME string
 	INITIAL_ADMIN_PASSWORD string
+
+	GMAIL_SMTP_HOST  string
+	GMAIL_SMTP_PORT  int
+	GMAIL_USERNAME   string
+	GMAIL_PASSWORD   string
+	GMAIL_FROM_EMAIL string
 }
 
 var Envs *EnvsSchema
@@ -51,6 +57,12 @@ func envInitiator() {
 		INITIAL_USER_PASSWORD:  viper.GetString("INITIAL_USER_PASSWORD"),
 		INITIAL_ADMIN_USERNAME: viper.GetString("INITIAL_ADMIN_USERNAME"),
 		INITIAL_ADMIN_PASSWORD: viper.GetString("INITIAL_ADMIN_PASSWORD"),
+
+		GMAIL_SMTP_HOST:  viper.GetString("GMAIL_SMTP_HOST"),
+		GMAIL_SMTP_PORT:  viper.GetInt("GMAIL_SMTP_PORT"),
+		GMAIL_USERNAME:   viper.GetString("GMAIL_USERNAME"),
+		GMAIL_PASSWORD:   viper.GetString("GMAIL_PASSWORD"),
+		GMAIL_FROM_EMAIL: viper.GetString("GMAIL_FROM_EMAIL"),
 	}
 }
 

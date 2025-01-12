@@ -1,10 +1,12 @@
 package ucase
 
 import (
+	"backend/config"
 	"backend/domain/dto"
 	"backend/domain/enum"
 	"backend/domain/model"
 	"backend/repository"
+	email_util "backend/utils/email"
 	error_utils "backend/utils/error"
 	"backend/utils/helper"
 	"fmt"
@@ -137,6 +139,39 @@ func (ucase *LoanUcase) CreateNewLoan(
 		}
 	}
 
+	// send email
+	go func() {
+		email_util.SendEmail(
+			*config.NewGMailConfig(),
+			[]string{user.Email},
+			"Your Loan Request Has Been Created Successfully",
+			fmt.Sprintf(`
+Hello %s,
+
+We are pleased to inform you that your loan request has been successfully created. Below are the details of your request:
+
+- Reference Number: %v
+- Asset Name: %s
+- OTR: %v
+- Total Amount: %v
+- Term Months: %v
+- Request Date: %v
+- Status: %v
+
+Our team is currently reviewing your application. You will receive another email once your request has been reviewed.
+
+Thank you for choosing our services!
+
+Best regards,
+PT. XYZ
+`, user.Username, newLoan.RefNumber,
+				newLoan.AssetName, newLoan.OTR,
+				newLoan.TotalAmount, newLoan.TermMonths,
+				newLoan.CreatedAt.String(), newLoan.Status.String(),
+			),
+		)
+	}()
+
 	currentUsedLimit += newLoan.TotalAmount
 	return &dto.CreateNewLoanRespData{
 		BaseLoanResponse:      newLoan.ToBaseResponse(),
@@ -185,6 +220,48 @@ func (ucase *LoanUcase) UpdateLoanStatus(
 			Detail:   err.Error(),
 		}
 	}
+
+	// get loan user
+	user, err := ucase.userRepo.GetByID(loan.UserID)
+	if err != nil {
+		logger.Debugf("failed to get user: %v", err)
+		return nil, &error_utils.CustomErr{
+			HttpCode: 500,
+			Message:  "internal server error",
+			Detail:   err.Error(),
+		}
+	}
+
+	// send email
+	go func() {
+		email_util.SendEmail(
+			*config.NewGMailConfig(),
+			[]string{user.Email},
+			"Your Loan Request Has Been Updated Successfully",
+			fmt.Sprintf(`
+Hello %s,
+
+We are pleased to inform you that your loan request has been successfully updated. Below are the details of your request:
+
+- Reference Number: %v
+- Asset Name: %s
+- OTR: %v
+- Total Amount: %v
+- Term Months: %v
+- Request Date: %v
+- Status: %v
+
+Thank you for choosing our services!
+
+Best regards,
+PT. XYZ
+`, user.Username, loan.RefNumber,
+				loan.AssetName, loan.OTR,
+				loan.TotalAmount, loan.TermMonths,
+				loan.CreatedAt.String(), loan.Status.String(),
+			),
+		)
+	}()
 
 	return &dto.UpdateLoanStatusRespData{
 		Status: loan.Status,
