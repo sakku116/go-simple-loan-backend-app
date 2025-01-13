@@ -452,7 +452,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Get user list",
+                "summary": "Get user list (admin only)",
                 "parameters": [
                     {
                         "type": "integer",
@@ -784,7 +784,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "Get user by UUID",
+                "summary": "Get user by UUID (admin only)",
                 "parameters": [
                     {
                         "type": "string",

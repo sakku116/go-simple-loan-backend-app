@@ -811,7 +811,7 @@ paths:
               type: object
       security:
       - OAuth2Password: []
-      summary: Get user list
+      summary: Get user list (admin only)
       tags:
       - User
     post:
@@ -918,7 +918,7 @@ paths:
               type: object
       security:
       - OAuth2Password: []
-      summary: Get user by UUID
+      summary: Get user by UUID (admin only)
       tags:
       - User
     put:
