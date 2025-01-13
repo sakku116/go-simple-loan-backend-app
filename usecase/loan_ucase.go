@@ -74,6 +74,15 @@ func (ucase *LoanUcase) CreateNewLoan(
 		}
 	}
 
+	// check if user meet requirements to create loan request
+	if user.KtpPhoto == nil || user.FacePhoto == nil {
+		logger.Debugf("user ktp and face photo is required")
+		return nil, &error_utils.CustomErr{
+			HttpCode: 400,
+			Message:  "Both KTP photo and face photo are required. Please update your account.",
+		}
+	}
+
 	// create new loan
 	newLoan := &model.Loan{
 		UUID:                   uuid.New().String(),

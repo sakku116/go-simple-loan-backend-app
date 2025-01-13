@@ -16,12 +16,12 @@ type Loan struct {
 	AssetName              string              `gorm:"type:varchar(255);not null" json:"asset_name"`
 	RefNumber              int64               `gorm:"type:bigint;not null" json:"ref_number"`
 	OTR                    float64             `gorm:"type:float;not null" json:"otr"`
-	InterestRatePercentage float64             `gorm:"type:float;null" json:"interest_rate_percentage" default:"10"`
-	InterestRate           float64             `gorm:"type:float;null" json:"interest_rate"`
-	AdminFeePercentage     float64             `gorm:"type:float;null" json:"admin_fee_percentage" default:"2"`
-	AdminFee               float64             `gorm:"type:float;null" json:"admin_fee"`
-	InstallmentAmount      float64             `gorm:"type:float;null" json:"installment_amount"`
-	TotalAmount            float64             `gorm:"type:float;null" json:"total_amount"`
+	InterestRatePercentage float64             `gorm:"type:float;not null" json:"interest_rate_percentage" default:"10"`
+	InterestRate           float64             `gorm:"type:float;not null" json:"interest_rate"`
+	AdminFeePercentage     float64             `gorm:"type:float;not null" json:"admin_fee_percentage" default:"2"`
+	AdminFee               float64             `gorm:"type:float;not null" json:"admin_fee"`
+	InstallmentAmount      float64             `gorm:"type:float;not null" json:"installment_amount"`
+	TotalAmount            float64             `gorm:"type:float;not null" json:"total_amount"`
 	TermMonths             enum.LoanTermMonths `gorm:"type:int;null" json:"term_months"`
 	Status                 enum.LoanStatus     `gorm:"type:varchar(255);not null" json:"status" default:"PENDING"`
 
