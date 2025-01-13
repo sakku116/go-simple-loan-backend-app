@@ -170,6 +170,7 @@ func (ucase *UserUcase) UpdateUser(
 	// get existing user
 	user, err := ucase.userRepo.GetByUUID(userUUID)
 	if err != nil {
+		logger.Debugf("user not found: %v", err)
 		if err.Error() == "not found" {
 			return nil, &error_utils.CustomErr{
 				HttpCode: 404,

@@ -3,6 +3,7 @@
 package mocks
 
 import (
+	dto "backend/domain/dto"
 	model "backend/domain/model"
 
 	mock "github.com/stretchr/testify/mock"
@@ -43,12 +44,79 @@ func (_m *ILoanRepo) Create(loan *model.Loan) (*model.Loan, error) {
 	return r0, r1
 }
 
-// GetPaidListByUserID provides a mock function with given fields: id
-func (_m *ILoanRepo) GetPaidListByUserID(id uint) ([]model.Loan, error) {
+// GetByUUID provides a mock function with given fields: uuid
+func (_m *ILoanRepo) GetByUUID(uuid string) (*model.Loan, error) {
+	ret := _m.Called(uuid)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetByUUID")
+	}
+
+	var r0 *model.Loan
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string) (*model.Loan, error)); ok {
+		return rf(uuid)
+	}
+	if rf, ok := ret.Get(0).(func(string) *model.Loan); ok {
+		r0 = rf(uuid)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.Loan)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(uuid)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetList provides a mock function with given fields: params
+func (_m *ILoanRepo) GetList(params dto.LoanRepo_GetListParams) ([]model.Loan, int64, error) {
+	ret := _m.Called(params)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetList")
+	}
+
+	var r0 []model.Loan
+	var r1 int64
+	var r2 error
+	if rf, ok := ret.Get(0).(func(dto.LoanRepo_GetListParams) ([]model.Loan, int64, error)); ok {
+		return rf(params)
+	}
+	if rf, ok := ret.Get(0).(func(dto.LoanRepo_GetListParams) []model.Loan); ok {
+		r0 = rf(params)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]model.Loan)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(dto.LoanRepo_GetListParams) int64); ok {
+		r1 = rf(params)
+	} else {
+		r1 = ret.Get(1).(int64)
+	}
+
+	if rf, ok := ret.Get(2).(func(dto.LoanRepo_GetListParams) error); ok {
+		r2 = rf(params)
+	} else {
+		r2 = ret.Error(2)
+	}
+
+	return r0, r1, r2
+}
+
+// GetUnPaidListByUserID provides a mock function with given fields: id
+func (_m *ILoanRepo) GetUnPaidListByUserID(id uint) ([]model.Loan, error) {
 	ret := _m.Called(id)
 
 	if len(ret) == 0 {
-		panic("no return value specified for GetPaidListByUserID")
+		panic("no return value specified for GetUnPaidListByUserID")
 	}
 
 	var r0 []model.Loan
@@ -66,6 +134,36 @@ func (_m *ILoanRepo) GetPaidListByUserID(id uint) ([]model.Loan, error) {
 
 	if rf, ok := ret.Get(1).(func(uint) error); ok {
 		r1 = rf(id)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// Update provides a mock function with given fields: loan
+func (_m *ILoanRepo) Update(loan *model.Loan) (*model.Loan, error) {
+	ret := _m.Called(loan)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 *model.Loan
+	var r1 error
+	if rf, ok := ret.Get(0).(func(*model.Loan) (*model.Loan, error)); ok {
+		return rf(loan)
+	}
+	if rf, ok := ret.Get(0).(func(*model.Loan) *model.Loan); ok {
+		r0 = rf(loan)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*model.Loan)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(*model.Loan) error); ok {
+		r1 = rf(loan)
 	} else {
 		r1 = ret.Error(1)
 	}

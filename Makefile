@@ -12,7 +12,7 @@ gen-swagger:
 
 gen-mocks:
 	@echo "Generating mocks..."
-	@mockery --dir ./repository --all --output ./mocks
+	@mockery --all --output ./mocks
 	@echo "Mocks generated."
 
 run-tests:

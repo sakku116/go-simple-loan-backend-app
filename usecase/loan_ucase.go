@@ -34,7 +34,7 @@ type ILoanUcase interface {
 	) (*dto.GetLoanListRespData, error)
 }
 
-func NewLoanuCase(
+func NewLoanCase(
 	loanRepo repository.ILoanRepo,
 	userRepo repository.IUserRepo,
 ) ILoanUcase {

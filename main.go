@@ -63,7 +63,7 @@ func main() {
 	// ucases
 	authUcase := ucase.NewAuthUcase(userRepo, refreshTokenRepo)
 	userUcase := ucase.NewUserUcase(userRepo, fileStorageUtil)
-	loanUcase := ucase.NewLoanuCase(loanRepo, userRepo)
+	loanUcase := ucase.NewLoanCase(loanRepo, userRepo)
 
 	dependencies := CommonDeps{
 		AuthUcase: authUcase,
