@@ -36,7 +36,7 @@ func NewUserHandler(
 	}
 }
 
-// @Summary Get user by UUID
+// @Summary Get user by UUID (admin only)
 // @Tags User
 // @Accept json
 // @Produce json
@@ -261,7 +261,7 @@ func (h UserHandler) UploadFacePhoto(c *gin.Context) {
 	h.respWriter.HTTPJsonOK(c, resp)
 }
 
-// @Summary Get user list
+// @Summary Get user list (admin only)
 // @Description Get user list
 // @Tags User
 // @Accept json

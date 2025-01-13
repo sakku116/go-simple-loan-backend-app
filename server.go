@@ -45,9 +45,9 @@ func SetupServer(ginEngine *gin.Engine, deps CommonDeps) {
 	{
 		userRouter := securedRouter.Group("/users")
 		{
-			userRouter.GET("", userHandler.GetUserList)
+			userRouter.GET("", adminOnlyMiddleware, userHandler.GetUserList)
 			userRouter.GET("/me", userHandler.GetMe)
-			userRouter.GET("/:uuid", userHandler.GetByUUID)
+			userRouter.GET("/:uuid", adminOnlyMiddleware, userHandler.GetByUUID)
 			userRouter.POST("", adminOnlyMiddleware, userHandler.CreateUser)
 			userRouter.PUT("", userHandler.UpdateUserMe)
 			userRouter.PUT("/:uuid", adminOnlyMiddleware, userHandler.UpdateUser)
@@ -61,7 +61,7 @@ func SetupServer(ginEngine *gin.Engine, deps CommonDeps) {
 		{
 			loanRouter.POST("", loanHandler.CreateNewLoan)
 			loanRouter.POST("/:uuid/status", adminOnlyMiddleware, loanHandler.UpdateLoanStatus)
-			loanRouter.GET("", loanHandler.GetLoanList)
+			loanRouter.GET("", adminOnlyMiddleware, loanHandler.GetLoanList)
 		}
 	}
 

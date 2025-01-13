@@ -233,7 +233,7 @@ const docTemplate = `{
                 "tags": [
                     "Loan"
                 ],
-                "summary": "Get loan list",
+                "summary": "Get loan list (admin only)",
                 "parameters": [
                     {
                         "type": "integer",

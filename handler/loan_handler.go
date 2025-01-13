@@ -93,7 +93,7 @@ func (h LoanHandler) UpdateLoanStatus(c *gin.Context) {
 	h.respWriter.HTTPJsonOK(c, data)
 }
 
-// @Summary Get loan list
+// @Summary Get loan list (admin only)
 // @Description Get loan list
 // @Tags Loan
 // @Accept json

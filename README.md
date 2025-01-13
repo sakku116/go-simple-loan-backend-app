@@ -1,0 +1,37 @@
+## .env Example
+
+```
+HOST=0.0.0.0
+PORT=8000
+LOG_LEVEL=debug
+JWT_SECRET_KEY=kopisusujahe
+JWT_EXP_MINS=60
+REFRESH_TOKEN_EXP_MINS=120
+
+# ======= DATABASE =======
+MYSQL_HOST=go_simple_loan_backend_mysql
+MYSQL_PORT=3306
+MYSQL_USER=root
+# compose
+MYSQL_PASSWORD=12345678
+# compose
+MYSQL_DATABASE=go_simple_loan_backend
+MINIO_ENDPOINT=go-simple-loan-backend-minio:9000
+# compose
+MINIO_ACCESS_KEY=root
+# compose
+MINIO_SECRET_KEY=12345678
+
+# ======= DATA SEED =======
+INITIAL_USER_USERNAME=initial_user1
+INITIAL_USER_PASSWORD=12345678
+INITIAL_ADMIN_USERNAME=initial_admin1
+INITIAL_ADMIN_PASSWORD=12345678
+
+# ======= EMAIL =======
+GMAIL_SMTP_HOST=smtp.gmail.com
+GMAIL_SMTP_PORT=587
+GMAIL_USERNAME=
+GMAIL_PASSWORD=
+GMAIL_FROM_EMAIL=ptxyz@gmail.com
+```

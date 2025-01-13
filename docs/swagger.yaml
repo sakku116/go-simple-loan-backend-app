@@ -684,7 +684,7 @@ paths:
               type: object
       security:
       - OAuth2Password: []
-      summary: Get loan list
+      summary: Get loan list (admin only)
       tags:
       - Loan
     post:

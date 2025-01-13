@@ -53,7 +53,7 @@ func (repo *UserRepo) GetByUUID(uuid string) (*model.User, error) {
 
 func (repo *UserRepo) GetByID(id uint) (*model.User, error) {
 	var user model.User
-	if err := repo.db.First(&user, "uuid = ?", id).Error; err != nil {
+	if err := repo.db.First(&user, "id = ?", id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, errors.New("not found")
 		}
